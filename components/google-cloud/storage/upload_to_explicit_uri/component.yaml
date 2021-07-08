@@ -3,7 +3,10 @@ inputs:
 - {name: Data}
 - {name: GCS path, type: URI}
 outputs:
-- {name: GCS path, type: URI}
+- {name: GCS path, type: String}
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
 implementation:
     container:
         image: google/cloud-sdk
