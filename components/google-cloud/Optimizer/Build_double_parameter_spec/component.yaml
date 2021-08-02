@@ -1,0 +1,123 @@
+name: Build double parameter spec for Google Cloud AI Platform Optimizer
+description: Builds an instance of Google Cloud AI Platform Optimizer ParameterSpec.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Optimizer/Build_double_parameter_spec/component.yaml'}
+inputs:
+- {name: parameter, type: String, description: Name of teh parameter. The parameter
+    name must be unique amongst all ParameterSpecs.}
+- {name: min_value, type: Float, description: Minimum value of the parameter., default: '0',
+  optional: true}
+- {name: max_value, type: Float, description: Maximum value of the parameter., default: '1',
+  optional: true}
+- name: scale_type
+  type: String
+  description: |-
+    The type of scaling that should be applied to this parameter.
+    SCALE_TYPE_UNSPECIFIED By default, no scaling is applied.
+    UNIT_LINEAR_SCALE Scales the feasible space to (0, 1) linearly.
+    UNIT_LOG_SCALE Scales the feasible space logarithmically to (0, 1). The entire feasible space must be strictly positive.
+    UNIT_REVERSE_LOG_SCALE Scales the feasible space "reverse" logarithmically to (0, 1). The result is that values close to the top of the feasible space are spread out more than points near the bottom. The entire feasible space must be strictly positive.
+  optional: true
+outputs:
+- {name: parameter_spec, type: JsonObject}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def build_double_parameter_spec_for_Google_Cloud_AI_Platform_Optimizer(
+          parameter,
+          min_value = 0,
+          max_value = 1,
+          scale_type = None,
+      ):
+          '''Builds an instance of Google Cloud AI Platform Optimizer ParameterSpec.
+
+          See https://cloud.google.com/ai-platform/optimizer/docs/reference/rest/v1/projects.locations.studies#parameterspec
+
+          Args:
+              parameter: Name of teh parameter. The parameter name must be unique amongst all ParameterSpecs.
+              min_value: Minimum value of the parameter.
+              max_value: Maximum value of the parameter.
+              scale_type: The type of scaling that should be applied to this parameter.
+                  SCALE_TYPE_UNSPECIFIED By default, no scaling is applied.
+                  UNIT_LINEAR_SCALE Scales the feasible space to (0, 1) linearly.
+                  UNIT_LOG_SCALE Scales the feasible space logarithmically to (0, 1). The entire feasible space must be strictly positive.
+                  UNIT_REVERSE_LOG_SCALE Scales the feasible space "reverse" logarithmically to (0, 1). The result is that values close to the top of the feasible space are spread out more than points near the bottom. The entire feasible space must be strictly positive.
+          '''
+
+          parameter_spec_dict = {
+              "parameter": parameter,
+              "type": "DOUBLE",
+              "doubleValueSpec": {
+                  "minValue": min_value,
+                  "maxValue": max_value,
+              },
+          }
+          if scale_type:
+              parameter_spec_dict["scaleType"] = scale_type
+
+          return (parameter_spec_dict, )
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Build double parameter spec for Google Cloud AI Platform Optimizer', description='Builds an instance of Google Cloud AI Platform Optimizer ParameterSpec.')
+      _parser.add_argument("--parameter", dest="parameter", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--min-value", dest="min_value", type=float, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--max-value", dest="max_value", type=float, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--scale-type", dest="scale_type", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = build_double_parameter_spec_for_Google_Cloud_AI_Platform_Optimizer(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --parameter
+    - {inputValue: parameter}
+    - if:
+        cond: {isPresent: min_value}
+        then:
+        - --min-value
+        - {inputValue: min_value}
+    - if:
+        cond: {isPresent: max_value}
+        then:
+        - --max-value
+        - {inputValue: max_value}
+    - if:
+        cond: {isPresent: scale_type}
+        then:
+        - --scale-type
+        - {inputValue: scale_type}
+    - '----output-paths'
+    - {outputPath: parameter_spec}
