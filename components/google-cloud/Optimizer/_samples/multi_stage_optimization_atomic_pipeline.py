@@ -18,7 +18,7 @@ import kfp
 from kfp import components
 
 
-suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/382c4d109fbd489bd85de54dd9171150e326b401/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
+suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/b3ec80d64938960d8caa4f1ba1ae1bbcc583e0b2/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
 
 get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/55ef28a9d51edc4eeed2a5c6f44cc7457e8a41d8/components/json/Get_element_by_index/component.yaml')
 build_dict_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/4a4be6b748b0d1284d65a417ce4ab5bec596e9fe/components/json/Build_dict/component.yaml')
@@ -27,7 +27,7 @@ combine_lists_op = components.load_component_from_url('https://raw.githubusercon
 
 
 # The train_and_measure_model is a semi-dummy component that creates a model given the [hyper]parameters and evaluates that model.
-# In this case, the model is a polinomial model.
+# In this case, the model is a polynomial model.
 # The evaluation procedure compares the model with the real function that our model is trying to learn
 # and calculates the mean squared error based on a random sample of data points.
 # In real world cases this component will be substituted by a sequence of model trainer, predictor and evaluator components.
@@ -118,9 +118,9 @@ def optimizer_pipeline():
         # Evaluate each suggested set of parameters.
         # Loop over the suggested trials.
         # We need to collect the created tasks in the `trial_measurement_tasks` list so that the next round of suggestions can depend on their completion.
-        # Cannot use dsl.ParallelFor here due to a bug in Argo https://github.com/argoproj/argo/issues/2660
+        # Cannot use dsl.ParallelFor here due to a bug in Argo https://github.com/argoproj/argo-workflows/issues/2660
         # Without ParallelFor we have to use python loop
-        # and explicitly get individual suggections using the get_element_by_index_op component
+        # and explicitly get individual suggestions using the get_element_by_index_op component
         # then extract the trial name and parameter sets using get_element_by_key_op and query_json_op components.
         new_metrics_for_parameter_sets = []
         for siggestion_index in range(suggestions_per_stage):
