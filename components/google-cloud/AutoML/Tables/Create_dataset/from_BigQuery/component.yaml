@@ -1,0 +1,267 @@
+name: Create dataset from BigQuery for Google Cloud AutoML Tables
+description: Creates Google Cloud AutoML Tables Dataset from CSV data stored in GCS.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/AutoML/Tables/Create_dataset/from_BigQuery/component.yaml'}
+inputs:
+- name: data_uri
+  type: GoogleCloudBigQueryUri
+  description: |-
+    Google Cloud BigQuery URI pointing to the data that should be imported into the dataset.
+    The bucket must be a regional bucket in the us-central1 region.
+    The file name must have a (case-insensitive) '.CSV' file extension.
+- {name: target_column_name, type: String, description: Name of the target column
+    for training., optional: true}
+- {name: column_nullability, type: JsonObject, description: Maps column name to boolean
+    specifying whether the column should be marked as nullable., default: '{}', optional: true}
+- {name: column_types, type: JsonObject, description: 'Maps column name to column
+    type. Supported types: FLOAT64, CATEGORY, STRING.', default: '{}', optional: true}
+- name: dataset_display_name
+  type: String
+  description: |-
+    Display name for the AutoML Dataset.
+    Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
+  optional: true
+- {name: gcp_project_id, type: String, description: 'Google Cloud project ID. If not
+    set, the default one will be used.', optional: true}
+- {name: gcp_region, type: String, description: Google Cloud region. AutoML Tables
+    only supports us-central1., default: us-central1, optional: true}
+outputs:
+- {name: dataset_name, type: String}
+- {name: dataset, type: JsonObject}
+- {name: dataset_url, type: URI}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'google-cloud-automl==2.4.2' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip
+      install --quiet --no-warn-script-location 'google-cloud-automl==2.4.2' --user)
+      && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def create_dataset_from_BigQuery_for_Google_Cloud_AutoML_Tables(
+          data_uri,
+          target_column_name = None,
+          column_nullability = {},
+          column_types = {},
+          dataset_display_name = None,
+          gcp_project_id = None,
+          gcp_region = 'us-central1',  # Currently "us-central1" is the only region supported by AutoML tables.
+      ):
+          '''Creates Google Cloud AutoML Tables Dataset from CSV data stored in GCS.
+
+          Annotations:
+              author: Alexey Volkov <alexey.volkov@ark-kun.com>
+
+          Args:
+              data_uri: Google Cloud BigQuery URI pointing to the data that should be imported into the dataset.
+                  The bucket must be a regional bucket in the us-central1 region.
+                  The file name must have a (case-insensitive) '.CSV' file extension.
+              target_column_name: Name of the target column for training.
+              column_nullability: Maps column name to boolean specifying whether the column should be marked as nullable.
+              column_types: Maps column name to column type. Supported types: FLOAT64, CATEGORY, STRING.
+              dataset_display_name: Display name for the AutoML Dataset.
+                  Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
+              gcp_project_id: Google Cloud project ID. If not set, the default one will be used.
+              gcp_region: Google Cloud region. AutoML Tables only supports us-central1.
+          Returns:
+              dataset_name: AutoML dataset name (fully-qualified)
+          '''
+
+          import datetime
+          import logging
+
+          import google.auth
+          from google.cloud import automl_v1beta1 as automl
+          from google.protobuf import json_format
+
+          logging.getLogger().setLevel(logging.INFO)
+
+          # Validating and inferring the arguments
+
+          if not gcp_project_id:
+              _, gcp_project_id = google.auth.default()
+
+          if not gcp_region:
+              gcp_region = 'us-central1'
+          if gcp_region != 'us-central1':
+              logging.warn('AutoML only supports the us-central1 region')
+          if not dataset_display_name:
+              dataset_display_name = 'Dataset_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
+
+          column_nullability = column_nullability or {}
+          for name, nullability in column_nullability.items():
+              assert isinstance(name, str)
+              assert isinstance(nullability, bool)
+
+          column_types = column_types or {}
+          for name, data_type in column_types.items():
+              assert isinstance(name, str)
+              if not hasattr(automl.TypeCode, data_type):
+                  supported_types = [type_name for type_name in dir(automl.TypeCode) if type_name[0] != '_']
+                  raise ValueError(f'Unknown column type "{data_type}". Supported types: {supported_types}')
+
+          logging.info(f'Creating AutoML Tables dataset.')
+          automl_client = automl.AutoMlClient()
+
+          project_location_path = f'projects/{gcp_project_id}/locations/{gcp_region}'
+
+          dataset = automl.Dataset(
+              display_name=dataset_display_name,
+              tables_dataset_metadata=automl.TablesDatasetMetadata(),
+              # labels={},
+          )
+          dataset = automl_client.create_dataset(
+              dataset=dataset,
+              parent=project_location_path,
+          )
+          dataset_id = dataset.name.split('/')[-1]
+          dataset_web_url = f'https://console.cloud.google.com/automl-tables/locations/{gcp_region}/datasets/{dataset_id}'
+          logging.info(f'Created dataset {dataset.name}.')
+          logging.info(f'Link: {dataset_web_url}')
+
+          logging.info(f'Importing data to the dataset: {dataset.name}.')
+          import_data_input_config = automl.InputConfig(
+              bigquery_source=automl.BigQuerySource(
+                  input_uri=data_uri,
+              )
+          )
+          import_data_response = automl_client.import_data(
+              name=dataset.name,
+              input_config=import_data_input_config,
+          )
+          import_data_response.result()
+          dataset = automl_client.get_dataset(
+              name=dataset.name,
+          )
+          logging.info(f'Finished importing data.')
+
+          logging.info('Updating column specs')
+          target_column_spec = None
+          primary_table_spec_name = dataset.name + '/tableSpecs/' + dataset.tables_dataset_metadata.primary_table_spec_id
+          table_specs_list = list(automl_client.list_table_specs(
+              parent=dataset.name,
+          ))
+          for table_spec in table_specs_list:
+              column_specs_list = list(automl_client.list_column_specs(
+                  parent=table_spec.name,
+              ))
+              is_primary_table = table_spec.name == primary_table_spec_name
+              for column_spec in column_specs_list:
+                  if column_spec.display_name == target_column_name and is_primary_table:
+                      target_column_spec = column_spec
+                  column_updated = False
+                  if column_spec.display_name in column_nullability:
+                      column_spec.data_type.nullable = column_nullability[column_spec.display_name]
+                      column_updated = True
+                  if column_spec.display_name in column_types:
+                      new_column_type = column_types[column_spec.display_name]
+                      column_spec.data_type.type_code = getattr(automl.TypeCode, new_column_type)
+                      column_updated = True
+                  if column_updated:
+                      automl_client.update_column_spec(column_spec=column_spec)
+
+          if target_column_name:
+              logging.info('Setting target column')
+              if not target_column_spec:
+                  raise ValueError(f'Primary table does not have column "{target_column_name}"')
+              target_column_spec_id = target_column_spec.name.split('/')[-1]
+              dataset.tables_dataset_metadata.target_column_spec_id = target_column_spec_id
+              dataset = automl_client.update_dataset(dataset=dataset)
+
+          dataset_json = json_format.MessageToJson(dataset._pb)
+          print(dataset_json)
+
+          return (dataset.name, dataset_json, dataset_web_url)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      def _serialize_str(str_value: str) -> str:
+          if not isinstance(str_value, str):
+              raise TypeError('Value "{}" has type "{}" instead of str.'.format(str(str_value), str(type(str_value))))
+          return str_value
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Create dataset from BigQuery for Google Cloud AutoML Tables', description='Creates Google Cloud AutoML Tables Dataset from CSV data stored in GCS.')
+      _parser.add_argument("--data-uri", dest="data_uri", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--target-column-name", dest="target_column_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--column-nullability", dest="column_nullability", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--column-types", dest="column_types", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--dataset-display-name", dest="dataset_display_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--gcp-project-id", dest="gcp_project_id", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--gcp-region", dest="gcp_region", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=3)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = create_dataset_from_BigQuery_for_Google_Cloud_AutoML_Tables(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_str,
+          _serialize_json,
+          str,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --data-uri
+    - {inputValue: data_uri}
+    - if:
+        cond: {isPresent: target_column_name}
+        then:
+        - --target-column-name
+        - {inputValue: target_column_name}
+    - if:
+        cond: {isPresent: column_nullability}
+        then:
+        - --column-nullability
+        - {inputValue: column_nullability}
+    - if:
+        cond: {isPresent: column_types}
+        then:
+        - --column-types
+        - {inputValue: column_types}
+    - if:
+        cond: {isPresent: dataset_display_name}
+        then:
+        - --dataset-display-name
+        - {inputValue: dataset_display_name}
+    - if:
+        cond: {isPresent: gcp_project_id}
+        then:
+        - --gcp-project-id
+        - {inputValue: gcp_project_id}
+    - if:
+        cond: {isPresent: gcp_region}
+        then:
+        - --gcp-region
+        - {inputValue: gcp_region}
+    - '----output-paths'
+    - {outputPath: dataset_name}
+    - {outputPath: dataset}
+    - {outputPath: dataset_url}
