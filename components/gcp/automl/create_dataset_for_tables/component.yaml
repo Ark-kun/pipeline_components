@@ -1,99 +1,119 @@
-name: Automl create dataset for tables
-description: automl_create_dataset_for_tables creates an empty Dataset for AutoML
-  tables
-inputs:
-- {name: gcp_project_id, type: String}
-- {name: gcp_region, type: String}
-- {name: display_name, type: String}
-- {name: description, type: String, optional: true}
-- {name: tables_dataset_metadata, type: JsonObject, default: '{}', optional: true}
-- {name: retry, optional: true}
-- {name: timeout, type: Float, optional: true}
-- {name: metadata, type: JsonObject, optional: true}
-outputs:
-- {name: dataset_path, type: String}
-- {name: create_time, type: String}
-- {name: dataset_id, type: String}
-- {name: dataset_url, type: URI}
+name: Create dataset for google cloud automl tables
+description: Creates an empty Dataset for AutoML tables
 metadata:
   annotations:
     author: Alexey Volkov <alexey.volkov@ark-kun.com>
     canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/gcp/automl/create_dataset_for_tables/component.yaml'
+inputs:
+- {name: display_name, type: String}
+- {name: description, type: String, optional: true}
+- {name: tables_dataset_metadata, type: JsonObject, default: '{}', optional: true}
+- {name: gcp_project_id, type: String, optional: true}
+- {name: gcp_region, type: String, optional: true}
+- {name: retry_config, type: JsonObject, optional: true}
+- {name: timeout, type: Float, optional: true}
+outputs:
+- {name: dataset_name, type: String}
+- {name: dataset, type: JsonObject}
+- {name: dataset_path, type: String}
+- {name: create_time, type: String}
+- {name: dataset_id, type: String}
+- {name: dataset_url, type: URI}
 implementation:
   container:
-    image: python:3.7
+    image: python:3.9
     command:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'google-cloud-automl==0.4.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip
-      install --quiet --no-warn-script-location 'google-cloud-automl==0.4.0' --user)
+      'google-cloud-automl==2.4.2' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip
+      install --quiet --no-warn-script-location 'google-cloud-automl==2.4.2' --user)
       && "$0" "$@"
-    - python3
-    - -u
-    - -c
+    - sh
+    - -ec
     - |
-      def automl_create_dataset_for_tables(
-          gcp_project_id ,
-          gcp_region ,
-          display_name ,
-          description  = None,
-          tables_dataset_metadata  = {},
-          retry=None, #=google.api_core.gapic_v1.method.DEFAULT,
-          timeout  = None, #=google.api_core.gapic_v1.method.DEFAULT,
-          metadata  = None,
-      )          :
-          '''automl_create_dataset_for_tables creates an empty Dataset for AutoML tables
-          '''
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def create_dataset_for_google_cloud_automl_tables(
+          display_name,
+          description = None,
+          tables_dataset_metadata = {},
+          gcp_project_id = None,
+          gcp_region = None,
+          retry_config = None, # : google.api_core.retry.Retry = google.api_core.gapic_v1.method.DEFAULT,
+          timeout = None, #=google.api_core.gapic_v1.method.DEFAULT,
+      ):
+          '''Creates an empty Dataset for AutoML tables'''
+          import logging
           import google
-          from google.cloud import automl
+          from google.protobuf import json_format
+          from google.cloud import automl_v1beta1 as automl
           client = automl.AutoMlClient()
 
-          location_path = client.location_path(gcp_project_id, gcp_region)
-          dataset_dict = {
-              'display_name': display_name,
-              'description': description,
-              'tables_dataset_metadata': tables_dataset_metadata,
-          }
-          dataset = client.create_dataset(
-              location_path,
-              dataset_dict,
-              retry or google.api_core.gapic_v1.method.DEFAULT,
-              timeout or google.api_core.gapic_v1.method.DEFAULT,
-              metadata,
-          )
-          print(dataset)
-          dataset_id = dataset.name.rsplit('/', 1)[-1]
-          dataset_url = 'https://console.cloud.google.com/automl-tables/locations/{region}/datasets/{dataset_id}/schemav2?project={project_id}'.format(
-              project_id=gcp_project_id,
-              region=gcp_region,
-              dataset_id=dataset_id,
-          )
-          return (dataset.name, dataset.create_time, dataset_id, dataset_url)
+          if not gcp_project_id:
+              _, gcp_project_id = google.auth.default()
 
-      import json
+          if not gcp_region:
+              gcp_region = 'us-central1'
+          if gcp_region != 'us-central1':
+              logging.warn('AutoML only supports the us-central1 region')
+
+          dataset = client.create_dataset(
+              parent=f"projects/{gcp_project_id}/locations/{gcp_region}",
+              dataset=automl.Dataset(
+                  display_name=display_name,
+                  description=description,
+                  tables_dataset_metadata=tables_dataset_metadata,
+              ),
+              retry=google.api_core.retry.Retry(**retry_config) if retry_config else google.api_core.gapic_v1.method.DEFAULT,
+              timeout=timeout or google.api_core.gapic_v1.method.DEFAULT,
+              # ! metadata was dict before, but now it's a sequence of tuples.
+              #metadata=(metadata or {}).items(),
+          )
+          dataset_json = json_format.MessageToJson(dataset._pb)
+          print(dataset_json)
+          dataset_id = dataset.name.rsplit('/', 1)[-1]
+          dataset_url = f'https://console.cloud.google.com/automl-tables/locations/{gcp_region}/datasets/{dataset_id}/schemav2?project={gcp_project_id}'
+          print(dataset_url)
+          return (dataset.name, dataset_json, dataset.name, str(dataset.create_time), dataset_id, dataset_url)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
       def _serialize_str(str_value: str) -> str:
           if not isinstance(str_value, str):
               raise TypeError('Value "{}" has type "{}" instead of str.'.format(str(str_value), str(type(str_value))))
           return str_value
 
+      import json
       import argparse
-      _parser = argparse.ArgumentParser(prog='Automl create dataset for tables', description='automl_create_dataset_for_tables creates an empty Dataset for AutoML tables')
-      _parser.add_argument("--gcp-project-id", dest="gcp_project_id", type=str, required=True, default=argparse.SUPPRESS)
-      _parser.add_argument("--gcp-region", dest="gcp_region", type=str, required=True, default=argparse.SUPPRESS)
+      _parser = argparse.ArgumentParser(prog='Create dataset for google cloud automl tables', description='Creates an empty Dataset for AutoML tables')
       _parser.add_argument("--display-name", dest="display_name", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--description", dest="description", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--tables-dataset-metadata", dest="tables_dataset_metadata", type=json.loads, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--retry", dest="retry", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--gcp-project-id", dest="gcp_project_id", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--gcp-region", dest="gcp_region", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--retry-config", dest="retry_config", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--timeout", dest="timeout", type=float, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--metadata", dest="metadata", type=json.loads, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=4)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=6)
       _parsed_args = vars(_parser.parse_args())
       _output_files = _parsed_args.pop("_output_paths", [])
 
-      _outputs = automl_create_dataset_for_tables(**_parsed_args)
+      _outputs = create_dataset_for_google_cloud_automl_tables(**_parsed_args)
 
       _output_serializers = [
+          _serialize_str,
+          _serialize_json,
           _serialize_str,
           _serialize_str,
           _serialize_str,
@@ -110,10 +130,6 @@ implementation:
           with open(output_file, 'w') as f:
               f.write(_output_serializers[idx](_outputs[idx]))
     args:
-    - --gcp-project-id
-    - {inputValue: gcp_project_id}
-    - --gcp-region
-    - {inputValue: gcp_region}
     - --display-name
     - {inputValue: display_name}
     - if:
@@ -127,21 +143,28 @@ implementation:
         - --tables-dataset-metadata
         - {inputValue: tables_dataset_metadata}
     - if:
-        cond: {isPresent: retry}
+        cond: {isPresent: gcp_project_id}
         then:
-        - --retry
-        - {inputValue: retry}
+        - --gcp-project-id
+        - {inputValue: gcp_project_id}
+    - if:
+        cond: {isPresent: gcp_region}
+        then:
+        - --gcp-region
+        - {inputValue: gcp_region}
+    - if:
+        cond: {isPresent: retry_config}
+        then:
+        - --retry-config
+        - {inputValue: retry_config}
     - if:
         cond: {isPresent: timeout}
         then:
         - --timeout
         - {inputValue: timeout}
-    - if:
-        cond: {isPresent: metadata}
-        then:
-        - --metadata
-        - {inputValue: metadata}
     - '----output-paths'
+    - {outputPath: dataset_name}
+    - {outputPath: dataset}
     - {outputPath: dataset_path}
     - {outputPath: create_time}
     - {outputPath: dataset_id}
