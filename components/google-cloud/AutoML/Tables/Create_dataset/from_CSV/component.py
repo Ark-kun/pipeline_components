@@ -2,16 +2,18 @@ from typing import NamedTuple
 
 from kfp.components import create_component_from_func, InputPath, OutputPath
 
-def automl_create_tables_dataset_from_csv(
+def create_dataset_from_CSV_for_Google_Cloud_AutoML_Tables(
     data_path: InputPath('CSV'),
     target_column_name: str = None,
     column_nullability: dict = {},
     column_types: dict = {},
     gcs_staging_uri: str = None,  # Currently AutoML Tables only supports regional buckets in "us-central1".
+    dataset_display_name: str = None,
     gcp_project_id: str = None,
     gcp_region: str = 'us-central1',  # Currently "us-central1" is the only region supported by AutoML tables.
 ) -> NamedTuple('Outputs', [
     ('dataset_name', str),
+    ('dataset', dict),
     ('dataset_url', 'URI'),
 ]):
     '''Creates Google Cloud AutoML Tables Dataset from CSV data.
@@ -25,18 +27,22 @@ def automl_create_tables_dataset_from_csv(
         column_nullability: Maps column name to boolean specifying whether the column should be marked as nullable.
         column_types: Maps column name to column type. Supported types: FLOAT64, CATEGORY, STRING.
         gcs_staging_uri: URI of the data staging location in Google Cloud Storage. The bucket must have the us-central1 region. If not specified, a new staging bucket will be created.
+        dataset_display_name: Display name for the AutoML Dataset.
+            Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
         gcp_project_id: Google Cloud project ID. If not set, the default one will be used.
         gcp_region: Google Cloud region. AutoML Tables only supports us-central1.
     Returns:
         dataset_name: AutoML dataset name (fully-qualified)
     '''
 
+    import datetime
     import logging
     import random
 
     import google.auth
     from google.cloud import automl_v1beta1 as automl
     from google.cloud import storage
+    from google.protobuf import json_format
 
     logging.getLogger().setLevel(logging.INFO)
 
@@ -49,8 +55,8 @@ def automl_create_tables_dataset_from_csv(
         gcp_region = 'us-central1'
     if gcp_region != 'us-central1':
         logging.warn('AutoML only supports the us-central1 region')
-
-    dataset_display_name = 'Dataset'  # Allowed characters for displayName are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9
+    if not dataset_display_name:
+        dataset_display_name = 'Dataset_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
 
     column_nullability = column_nullability or {}
     for name, nullability in column_nullability.items():
@@ -62,7 +68,7 @@ def automl_create_tables_dataset_from_csv(
         assert isinstance(name, str)
         if not hasattr(automl.TypeCode, data_type):
             supported_types = [type_name for type_name in dir(automl.TypeCode) if type_name[0] != '_']
-            raise ValueError(f'Unknow column type "{data_type}". Supported types: {supported_types}')
+            raise ValueError(f'Unknown column type "{data_type}". Supported types: {supported_types}')
 
     # Generating execution ID for data staging
     random_integer = random.SystemRandom().getrandbits(256)
@@ -114,7 +120,8 @@ def automl_create_tables_dataset_from_csv(
     )
     dataset_id = dataset.name.split('/')[-1]
     dataset_web_url = f'https://console.cloud.google.com/automl-tables/locations/{gcp_region}/datasets/{dataset_id}'
-    logging.info(f'Created dataset {dataset.name}. Link: {dataset_web_url}')
+    logging.info(f'Created dataset {dataset.name}.')
+    logging.info(f'Link: {dataset_web_url}')
 
     logging.info(f'Importing data to the dataset: {dataset.name}.')
     import_data_input_config = automl.InputConfig(
@@ -166,14 +173,17 @@ def automl_create_tables_dataset_from_csv(
         dataset.tables_dataset_metadata.target_column_spec_id = target_column_spec_id
         dataset = automl_client.update_dataset(dataset=dataset)
 
-    return (dataset.name, dataset_web_url)
+    dataset_json = json_format.MessageToJson(dataset._pb)
+    print(dataset_json)
+
+    return (dataset.name, dataset_json, dataset_web_url)
 
 
 if __name__ == '__main__':
-    automl_create_tables_dataset_from_csv_op = create_component_from_func(
-        automl_create_tables_dataset_from_csv,
+    create_dataset_from_CSV_for_Google_Cloud_AutoML_Tables_op = create_component_from_func(
+        create_dataset_from_CSV_for_Google_Cloud_AutoML_Tables,
         base_image='python:3.8',
-        packages_to_install=['google-cloud-automl==2.0.0', 'google-cloud-storage==1.31.2', 'google-auth==1.21.3'],
+        packages_to_install=['google-cloud-automl==2.4.2', 'google-cloud-storage==1.41.1'],
         output_component_file='component.yaml',
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
