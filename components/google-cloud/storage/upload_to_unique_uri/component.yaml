@@ -1,4 +1,4 @@
-name: Upload to GCS
+name: Upload to GCS with unique name
 description: Upload to GCS with unique URI suffix
 inputs:
 - {name: Data}
@@ -17,12 +17,17 @@ implementation:
         - -ex
         - -c
         - |
+            data_path="$0"
+            url_prefix="$1"
+            output_path="$2"
+            random_string=$(< dev/urandom tr -dc A-Za-z0-9 | head -c 64)
+            uri="${url_prefix}${random_string}"
             if [ -n "${GOOGLE_APPLICATION_CREDENTIALS}" ]; then
                 gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
             fi
-            gsutil cp -r "$0" "$1"
-            mkdir -p "$(dirname "$2")"
-            echo "$1" > "$2"
+            gsutil cp -r "$data_path" "$uri"
+            mkdir -p "$(dirname "$output_path")"
+            echo "$uri" > "$output_path"
         - inputPath: Data
-        - concat: [{inputValue: GCS path prefix}, '{{workflow.uid}}_{{pod.name}}']
+        - {inputValue: GCS path prefix}
         - outputPath: GCS path
