@@ -1,5 +1,7 @@
-name: Automl create tables dataset from csv
+name: Create dataset from CSV for Google Cloud AutoML Tables
 description: Creates Google Cloud AutoML Tables Dataset from CSV data.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/AutoML/Tables/Create_dataset/from_CSV/component.yaml'}
 inputs:
 - {name: data, type: CSV, description: Data in CSV format that will be imported to
     the dataset.}
@@ -12,17 +14,20 @@ inputs:
 - {name: gcs_staging_uri, type: String, description: 'URI of the data staging location
     in Google Cloud Storage. The bucket must have the us-central1 region. If not specified,
     a new staging bucket will be created.', optional: true}
+- name: dataset_display_name
+  type: String
+  description: |-
+    Display name for the AutoML Dataset.
+    Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
+  optional: true
 - {name: gcp_project_id, type: String, description: 'Google Cloud project ID. If not
     set, the default one will be used.', optional: true}
 - {name: gcp_region, type: String, description: Google Cloud region. AutoML Tables
     only supports us-central1., default: us-central1, optional: true}
 outputs:
 - {name: dataset_name, type: String}
+- {name: dataset, type: JsonObject}
 - {name: dataset_url, type: URI}
-metadata:
-  annotations:
-    author: Alexey Volkov <alexey.volkov@ark-kun.com>
-    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/AutoML/Tables/Create_dataset/from_CSV/component.yaml'
 implementation:
   container:
     image: python:3.8
@@ -30,20 +35,23 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'google-cloud-automl==2.0.0' 'google-cloud-storage==1.31.2' 'google-auth==1.21.3'
-      || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'google-cloud-automl==2.0.0' 'google-cloud-storage==1.31.2' 'google-auth==1.21.3'
-      --user) && "$0" "$@"
-    - python3
-    - -u
-    - -c
+      'google-cloud-automl==2.4.2' 'google-cloud-storage==1.41.1' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'google-cloud-automl==2.4.2'
+      'google-cloud-storage==1.41.1' --user) && "$0" "$@"
+    - sh
+    - -ec
     - |
-      def automl_create_tables_dataset_from_csv(
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def create_dataset_from_CSV_for_Google_Cloud_AutoML_Tables(
           data_path,
           target_column_name = None,
           column_nullability = {},
           column_types = {},
           gcs_staging_uri = None,  # Currently AutoML Tables only supports regional buckets in "us-central1".
+          dataset_display_name = None,
           gcp_project_id = None,
           gcp_region = 'us-central1',  # Currently "us-central1" is the only region supported by AutoML tables.
       ):
@@ -58,18 +66,22 @@ implementation:
               column_nullability: Maps column name to boolean specifying whether the column should be marked as nullable.
               column_types: Maps column name to column type. Supported types: FLOAT64, CATEGORY, STRING.
               gcs_staging_uri: URI of the data staging location in Google Cloud Storage. The bucket must have the us-central1 region. If not specified, a new staging bucket will be created.
+              dataset_display_name: Display name for the AutoML Dataset.
+                  Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
               gcp_project_id: Google Cloud project ID. If not set, the default one will be used.
               gcp_region: Google Cloud region. AutoML Tables only supports us-central1.
           Returns:
               dataset_name: AutoML dataset name (fully-qualified)
           '''
 
+          import datetime
           import logging
           import random
 
           import google.auth
           from google.cloud import automl_v1beta1 as automl
           from google.cloud import storage
+          from google.protobuf import json_format
 
           logging.getLogger().setLevel(logging.INFO)
 
@@ -82,8 +94,8 @@ implementation:
               gcp_region = 'us-central1'
           if gcp_region != 'us-central1':
               logging.warn('AutoML only supports the us-central1 region')
-
-          dataset_display_name = 'Dataset'  # Allowed characters for displayName are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9
+          if not dataset_display_name:
+              dataset_display_name = 'Dataset_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
 
           column_nullability = column_nullability or {}
           for name, nullability in column_nullability.items():
@@ -95,7 +107,7 @@ implementation:
               assert isinstance(name, str)
               if not hasattr(automl.TypeCode, data_type):
                   supported_types = [type_name for type_name in dir(automl.TypeCode) if type_name[0] != '_']
-                  raise ValueError(f'Unknow column type "{data_type}". Supported types: {supported_types}')
+                  raise ValueError(f'Unknown column type "{data_type}". Supported types: {supported_types}')
 
           # Generating execution ID for data staging
           random_integer = random.SystemRandom().getrandbits(256)
@@ -147,7 +159,8 @@ implementation:
           )
           dataset_id = dataset.name.split('/')[-1]
           dataset_web_url = f'https://console.cloud.google.com/automl-tables/locations/{gcp_region}/datasets/{dataset_id}'
-          logging.info(f'Created dataset {dataset.name}. Link: {dataset_web_url}')
+          logging.info(f'Created dataset {dataset.name}.')
+          logging.info(f'Link: {dataset_web_url}')
 
           logging.info(f'Importing data to the dataset: {dataset.name}.')
           import_data_input_config = automl.InputConfig(
@@ -199,7 +212,21 @@ implementation:
               dataset.tables_dataset_metadata.target_column_spec_id = target_column_spec_id
               dataset = automl_client.update_dataset(dataset=dataset)
 
-          return (dataset.name, dataset_web_url)
+          dataset_json = json_format.MessageToJson(dataset._pb)
+          print(dataset_json)
+
+          return (dataset.name, dataset_json, dataset_web_url)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
 
       def _serialize_str(str_value: str) -> str:
           if not isinstance(str_value, str):
@@ -208,22 +235,24 @@ implementation:
 
       import json
       import argparse
-      _parser = argparse.ArgumentParser(prog='Automl create tables dataset from csv', description='Creates Google Cloud AutoML Tables Dataset from CSV data.')
+      _parser = argparse.ArgumentParser(prog='Create dataset from CSV for Google Cloud AutoML Tables', description='Creates Google Cloud AutoML Tables Dataset from CSV data.')
       _parser.add_argument("--data", dest="data_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--target-column-name", dest="target_column_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--column-nullability", dest="column_nullability", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--column-types", dest="column_types", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--gcs-staging-uri", dest="gcs_staging_uri", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--dataset-display-name", dest="dataset_display_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--gcp-project-id", dest="gcp_project_id", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--gcp-region", dest="gcp_region", type=str, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=2)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=3)
       _parsed_args = vars(_parser.parse_args())
       _output_files = _parsed_args.pop("_output_paths", [])
 
-      _outputs = automl_create_tables_dataset_from_csv(**_parsed_args)
+      _outputs = create_dataset_from_CSV_for_Google_Cloud_AutoML_Tables(**_parsed_args)
 
       _output_serializers = [
           _serialize_str,
+          _serialize_json,
           str,
 
       ]
@@ -260,6 +289,11 @@ implementation:
         - --gcs-staging-uri
         - {inputValue: gcs_staging_uri}
     - if:
+        cond: {isPresent: dataset_display_name}
+        then:
+        - --dataset-display-name
+        - {inputValue: dataset_display_name}
+    - if:
         cond: {isPresent: gcp_project_id}
         then:
         - --gcp-project-id
@@ -271,4 +305,5 @@ implementation:
         - {inputValue: gcp_region}
     - '----output-paths'
     - {outputPath: dataset_name}
+    - {outputPath: dataset}
     - {outputPath: dataset_url}
