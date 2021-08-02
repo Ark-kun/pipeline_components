@@ -1,13 +1,13 @@
-name: Build list of numbers
-description: Creates a JSON array from multiple numbers.
+name: Build list of integers
+description: Creates a JSON array from multiple integer numbers.
 metadata:
-  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/json/Build_list_of_numbers/component.yaml'}
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/json/Build_list_of_integers/component.yaml'}
 inputs:
-- {name: item_1, type: Float, optional: true}
-- {name: item_2, type: Float, optional: true}
-- {name: item_3, type: Float, optional: true}
-- {name: item_4, type: Float, optional: true}
-- {name: item_5, type: Float, optional: true}
+- {name: item_1, type: Integer, optional: true}
+- {name: item_2, type: Integer, optional: true}
+- {name: item_3, type: Integer, optional: true}
+- {name: item_4, type: Integer, optional: true}
+- {name: item_5, type: Integer, optional: true}
 outputs:
 - {name: Output, type: JsonArray}
 implementation:
@@ -21,14 +21,14 @@ implementation:
       printf "%s" "$0" > "$program_path"
       python3 -u "$program_path" "$@"
     - |
-      def build_list_of_numbers(
+      def build_list_of_integers(
           item_1 = None,
           item_2 = None,
           item_3 = None,
           item_4 = None,
           item_5 = None,
       ):
-          """Creates a JSON array from multiple numbers.
+          """Creates a JSON array from multiple integer numbers.
 
           Annotations:
               author: Alexey Volkov <alexey.volkov@ark-kun.com>
@@ -51,17 +51,17 @@ implementation:
           return json.dumps(obj, default=default_serializer, sort_keys=True)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Build list of numbers', description='Creates a JSON array from multiple numbers.')
-      _parser.add_argument("--item-1", dest="item_1", type=float, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--item-2", dest="item_2", type=float, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--item-3", dest="item_3", type=float, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--item-4", dest="item_4", type=float, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--item-5", dest="item_5", type=float, required=False, default=argparse.SUPPRESS)
+      _parser = argparse.ArgumentParser(prog='Build list of integers', description='Creates a JSON array from multiple integer numbers.')
+      _parser.add_argument("--item-1", dest="item_1", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--item-2", dest="item_2", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--item-3", dest="item_3", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--item-4", dest="item_4", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--item-5", dest="item_5", type=int, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
       _parsed_args = vars(_parser.parse_args())
       _output_files = _parsed_args.pop("_output_paths", [])
 
-      _outputs = build_list_of_numbers(**_parsed_args)
+      _outputs = build_list_of_integers(**_parsed_args)
 
       _outputs = [_outputs]
 
