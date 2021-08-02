@@ -37,15 +37,10 @@ def create_study_in_gcp_ai_platform_optimizer(
     # Building the API client.
     # The main API does not work, so we need to build from the published discovery document.
     def create_caip_optimizer_client(project_id):
-        from google.cloud import storage
         from googleapiclient import discovery
-        _OPTIMIZER_API_DOCUMENT_BUCKET = 'caip-optimizer-public'
-        _OPTIMIZER_API_DOCUMENT_FILE = 'api/ml_public_google_rest_v1.json'
-        client = storage.Client(project_id)
-        bucket = client.get_bucket(_OPTIMIZER_API_DOCUMENT_BUCKET)
-        blob = bucket.get_blob(_OPTIMIZER_API_DOCUMENT_FILE)
-        discovery_document = blob.download_as_string()
-        return discovery.build_from_document(service=discovery_document)
+        # The discovery is broken. See https://github.com/googleapis/google-api-python-client/issues/1470
+        # return discovery.build("ml", "v1")
+        return discovery.build("ml", "v1", discoveryServiceUrl='https://storage.googleapis.com/caip-optimizer-public/api/ml_public_google_rest_v1.json')
 
     ml_api = create_caip_optimizer_client(gcp_project_id)
 
@@ -75,7 +70,7 @@ if __name__ == '__main__':
     create_study_in_gcp_ai_platform_optimizer_op = create_component_from_func(
         create_study_in_gcp_ai_platform_optimizer,
         base_image='python:3.8',
-        packages_to_install=['google-api-python-client==1.12.3', 'google-cloud-storage==1.31.2', 'google-auth==1.21.3'],
+        packages_to_install=['google-api-python-client==1.12.3', 'google-auth==1.21.3'],
         output_component_file='component.yaml',
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
