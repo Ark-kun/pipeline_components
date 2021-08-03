@@ -36,7 +36,7 @@ implementation:
       EOF
       object_name=$(kubectl apply -f "$object_path" --namespace default --output=name)
       object_name=${object_name##persistentvolumeclaim/}
-      echo "$object_name" >"$output_name_path"
+      printf "%s" "$object_name" >"$output_name_path"
 
     - {inputValue: Name}
     - {inputValue: Storage size}

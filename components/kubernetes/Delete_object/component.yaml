@@ -24,8 +24,8 @@ implementation:
       mkdir -p "$(dirname "$output_kind_path")"
 
       typed_object_name=$(kubectl delete "$object_type" "$object_name" --output=name)
-      echo "${typed_object_name##*/}" >"$output_name_path"
-      echo "${typed_object_name%/*}" >"$output_kind_path"
+      printf "%s" "${typed_object_name##*/}" >"$output_name_path"
+      printf "%s" "${typed_object_name%/*}" >"$output_kind_path"
 
     - {inputValue: Name}
     - {inputValue: Kind}
