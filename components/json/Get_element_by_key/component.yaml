@@ -19,7 +19,7 @@ implementation:
       output_path=$1
       key=$2
       mkdir -p "$(dirname "$output_path")"
-      < "$input_path" jq --raw-output '.["'"$key"'"]' > "$output_path"
+      < "$input_path" jq --raw-output --join-output '.["'"$key"'"]' > "$output_path"
     - {inputPath: Json}
     - {outputPath: Output}
     - {inputValue: Key}
