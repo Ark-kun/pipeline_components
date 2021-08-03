@@ -1,0 +1,177 @@
+name: Create tabular dataset from BigQuery for Google Cloud Vertex AI
+description: Creates Google Cloud Vertex AI Tabular Dataset from CSV data stored in
+  GCS.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/AutoML/Tables/Create_dataset/from_BigQuery/component.yaml'}
+inputs:
+- name: data_uri
+  type: GoogleCloudBigQueryUri
+  description: |-
+    Google Cloud BigQuery URI pointing to the data that should be imported into the dataset.
+    The bucket must be a regional bucket in the us-central1 region.
+    The file name must have a (case-insensitive) '.CSV' file extension.
+- name: display_name
+  type: String
+  description: |-
+    Display name for the AutoML Dataset.
+    Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
+  optional: true
+- name: encryption_spec_key_name
+  type: String
+  description: |-
+    Optional. The Cloud KMS resource identifier of the customer
+    managed encryption key used to protect a resource. Has the
+    form:
+    ``projects/my-project/locations/my-region/keyRings/my-kr/cryptoKeys/my-key``.
+    The key needs to be in the same region as where the compute
+    resource is created.
+  optional: true
+- {name: project, type: String, description: 'Google Cloud project ID. If not set,
+    the default one will be used.', optional: true}
+- {name: location, type: String, description: Google Cloud region. AutoML Tables only
+    supports us-central1., default: us-central1, optional: true}
+outputs:
+- {name: dataset_name, type: GoogleCloudVertexAiTabularDatasetName}
+- {name: dataset_dict, type: JsonObject}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'google-cloud-aiplatform==1.1.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform==1.1.1'
+      --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def create_tabular_dataset_from_BigQuery_for_Google_Cloud_Vertex_AI(
+          data_uri,
+          display_name = None,
+          encryption_spec_key_name = None,
+          project = None,
+          location = 'us-central1',
+      ):
+          '''Creates Google Cloud Vertex AI Tabular Dataset from CSV data stored in GCS.
+
+          Annotations:
+              author: Alexey Volkov <alexey.volkov@ark-kun.com>
+
+          Args:
+              data_uri: Google Cloud BigQuery URI pointing to the data that should be imported into the dataset.
+                  The bucket must be a regional bucket in the us-central1 region.
+                  The file name must have a (case-insensitive) '.CSV' file extension.
+              display_name: Display name for the AutoML Dataset.
+                  Allowed characters are ASCII Latin letters A-Z and a-z, an underscore (_), and ASCII digits 0-9.
+              encryption_spec_key_name (Optional[str]):
+                  Optional. The Cloud KMS resource identifier of the customer
+                  managed encryption key used to protect a resource. Has the
+                  form:
+                  ``projects/my-project/locations/my-region/keyRings/my-kr/cryptoKeys/my-key``.
+                  The key needs to be in the same region as where the compute
+                  resource is created.
+              project: Google Cloud project ID. If not set, the default one will be used.
+              location: Google Cloud region. AutoML Tables only supports us-central1.
+          Returns:
+              dataset_name: Dataset name (fully-qualified)
+              dataset_dict: Dataset object in JSON format
+          '''
+
+          import datetime
+          import json
+          import logging
+
+          from google.cloud import aiplatform
+          from google.protobuf import json_format
+
+          logging.getLogger().setLevel(logging.INFO)
+
+          if not display_name:
+              display_name = 'Dataset_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
+
+          aiplatform.init(
+              project=project,
+              location=location,
+              encryption_spec_key_name=encryption_spec_key_name,
+          )
+          dataset = aiplatform.TabularDataset.create(
+              display_name=display_name,
+              bq_source=data_uri,
+          )
+          (_, dataset_project, _, dataset_location, _, dataset_id) = dataset.resource_name.split('/')
+          dataset_web_url = f'https://console.cloud.google.com/vertex-ai/locations/{dataset_location}/datasets/{dataset_id}/analyze?project={dataset_project}'
+          logging.info(f'Created dataset {dataset.name}.')
+          logging.info(f'Link: {dataset_web_url}')
+          dataset_json = json_format.MessageToJson(dataset._gca_resource._pb)
+          print(dataset_json)
+          return (dataset.resource_name, dataset_json, dataset_web_url)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Create tabular dataset from BigQuery for Google Cloud Vertex AI', description='Creates Google Cloud Vertex AI Tabular Dataset from CSV data stored in GCS.')
+      _parser.add_argument("--data-uri", dest="data_uri", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--display-name", dest="display_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--encryption-spec-key-name", dest="encryption_spec_key_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--project", dest="project", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--location", dest="location", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=2)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = create_tabular_dataset_from_BigQuery_for_Google_Cloud_Vertex_AI(**_parsed_args)
+
+      _output_serializers = [
+          str,
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --data-uri
+    - {inputValue: data_uri}
+    - if:
+        cond: {isPresent: display_name}
+        then:
+        - --display-name
+        - {inputValue: display_name}
+    - if:
+        cond: {isPresent: encryption_spec_key_name}
+        then:
+        - --encryption-spec-key-name
+        - {inputValue: encryption_spec_key_name}
+    - if:
+        cond: {isPresent: project}
+        then:
+        - --project
+        - {inputValue: project}
+    - if:
+        cond: {isPresent: location}
+        then:
+        - --location
+        - {inputValue: location}
+    - '----output-paths'
+    - {outputPath: dataset_name}
+    - {outputPath: dataset_dict}
