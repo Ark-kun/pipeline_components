@@ -21,7 +21,7 @@ implementation:
             fi
             gsutil cp -r "$0" "$1"
             mkdir -p "$(dirname "$2")"
-            echo "$1" > "$2"
+            printf "%s" "$1" > "$2"
         - inputPath: Data
         - inputValue: GCS path
         - outputPath: GCS path

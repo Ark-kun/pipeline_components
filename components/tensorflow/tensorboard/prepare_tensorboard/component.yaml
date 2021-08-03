@@ -24,7 +24,7 @@ implementation:
       output_metadata_path="$2"
       mkdir -p "$(dirname "$output_log_dir_path")"
       mkdir -p "$(dirname "$output_metadata_path")"
-      echo "$log_dir" > "$output_log_dir_path"
+      printf "%s" "$log_dir" > "$output_log_dir_path"
       echo '
           {
             "outputs" : [{

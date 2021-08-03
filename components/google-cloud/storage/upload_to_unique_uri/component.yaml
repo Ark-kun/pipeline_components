@@ -27,7 +27,7 @@ implementation:
             fi
             gsutil cp -r "$data_path" "$uri"
             mkdir -p "$(dirname "$output_path")"
-            echo "$uri" > "$output_path"
+            printf "%s" "$uri" > "$output_path"
         - inputPath: Data
         - {inputValue: GCS path prefix}
         - outputPath: GCS path

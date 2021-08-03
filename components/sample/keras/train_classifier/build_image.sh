@@ -28,4 +28,4 @@ docker push "$full_image_name"
 image_name_with_digest=$(docker inspect --format="{{index .RepoDigests 0}}" "$IMAGE_NAME")
 strict_image_name_output_file=./versions/image_digests_for_tags/$image_tag
 mkdir -p "$(dirname "$strict_image_name_output_file")"
-echo $image_name_with_digest | tee "$strict_image_name_output_file"
+printf "%s" $image_name_with_digest | tee "$strict_image_name_output_file"
