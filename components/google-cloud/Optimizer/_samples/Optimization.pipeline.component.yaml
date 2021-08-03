@@ -1,0 +1,174 @@
+name: Google Cloud AI Platform Optimizer pipeline
+metadata:
+  annotations:
+    sdk: 'https://cloud-pipelines.github.io/pipeline-editor/'
+implementation:
+  graph:
+    tasks:
+      Chicago Taxi Trips dataset:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/2463ecda532517462590d75e6e14a8af6b55869a/components/datasets/Chicago_Taxi_Trips/component.yaml'
+        annotations:
+          editor.position: '{"x":40,"y":40,"width":180,"height":40}'
+      Build integer parameter spec for Google Cloud AI Platform Optimizer:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/b00fe3d3ed551f0f81ea15c65943c3b7a5800f60/components/google-cloud/Optimizer/Build_integer_parameter_spec/component.yaml'
+        annotations:
+          editor.position: '{"x":280,"y":40,"width":180,"height":70}'
+        arguments:
+          parameter: p1
+          max_value: '30'
+          min_value: '5'
+      Pandas Transform DataFrame in CSV format:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/6162d55998b176b50267d351241100bb0ee715bc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'
+        annotations:
+          editor.position: '{"x":40,"y":170,"width":180,"height":54}'
+        arguments:
+          table:
+            taskOutput:
+              taskId: Chicago Taxi Trips dataset
+              outputName: Table
+          transform_code: df=df.fillna(0)
+      Build list:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d7a6e4ae90f15821c0151f4185ff1d18ed384431/components/json/Build_list/component.yaml'
+        annotations:
+          editor.position: '{"x":280,"y":170,"width":180,"height":40}'
+        arguments:
+          item_1:
+            taskOutput:
+              taskId: Build integer parameter spec for Google Cloud AI Platform Optimizer
+              outputName: parameter_spec
+      Suggest parameter sets from measurements using gcp ai platform optimizer:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/62df0b062bc13fc1996db839f519c3517e923641/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml'
+        annotations:
+          editor.position: '{"x":280,"y":270,"width":180,"height":70}'
+        arguments:
+          parameter_specs:
+            taskOutput:
+              taskId: Build list
+              outputName: Output
+          metrics_for_parameter_sets: '[]'
+          suggestion_count: '10'
+          gcp_project_id: avolkov-31337
+      Get element by index from JSON:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/204f65b69b32b05687131603b1642b50f953438f/components/json/Get_element_by_index/component.yaml'
+        annotations:
+          editor.position: '{"x":160,"y":450,"width":180,"height":54}'
+        arguments:
+          Index: '0'
+          Json:
+            taskOutput:
+              taskId: Suggest parameter sets from measurements using gcp ai platform optimizer
+              outputName: suggested_parameter_sets
+      Get element by index from JSON 2:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/204f65b69b32b05687131603b1642b50f953438f/components/json/Get_element_by_index/component.yaml'
+        annotations:
+          editor.position: '{"x":410,"y":450,"width":180,"height":54}'
+        arguments:
+          Json:
+            taskOutput:
+              taskId: Suggest parameter sets from measurements using gcp ai platform optimizer
+              outputName: suggested_parameter_sets
+          Index: '1'
+      Get element by key from JSON:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/204f65b69b32b05687131603b1642b50f953438f/components/json/Get_element_by_key/component.yaml'
+        annotations:
+          editor.position: '{"x":160,"y":560,"width":180,"height":54}'
+        arguments:
+          Key: p1
+          Json:
+            taskOutput:
+              taskId: Get element by index from JSON
+              outputName: Output
+      Get element by key from JSON 2:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/204f65b69b32b05687131603b1642b50f953438f/components/json/Get_element_by_key/component.yaml'
+        annotations:
+          editor.position: '{"x":410,"y":560,"width":180,"height":54}'
+        arguments:
+          Key: p1
+          Json:
+            taskOutput:
+              taskId: Get element by index from JSON 2
+              outputName: Output
+      Build list of integers:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/01782018e2904624b4e58652088223eeaafc2f91/components/json/Build_list_of_integers/component.yaml'
+        annotations:
+          editor.position: '{"x":160,"y":680,"width":180,"height":40}'
+        arguments:
+          item_2:
+            taskOutput:
+              taskId: Get element by key from JSON
+              outputName: Output
+          item_1: '8'
+          item_3: '1'
+      Build list of integers 2:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/01782018e2904624b4e58652088223eeaafc2f91/components/json/Build_list_of_integers/component.yaml'
+        annotations:
+          editor.position: '{"x":410,"y":680,"width":180,"height":40}'
+        arguments:
+          item_2:
+            taskOutput:
+              taskId: Get element by key from JSON 2
+              outputName: Output
+          item_1: '8'
+          item_3: '1'
+      Create fully connected pytorch network:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/4e1facea1a270535b515a9e8cc59422d1ad76a9e/components/PyTorch/Create_fully_connected_network/component.yaml'
+        annotations:
+          editor.position: '{"x":160,"y":780,"width":180,"height":54}'
+        arguments:
+          layer_sizes:
+            taskOutput:
+              taskId: Build list of integers
+              outputName: Output
+      Create fully connected pytorch network 2:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/4e1facea1a270535b515a9e8cc59422d1ad76a9e/components/PyTorch/Create_fully_connected_network/component.yaml'
+        annotations:
+          editor.position: '{"x":410,"y":780,"width":180,"height":54}'
+        arguments:
+          layer_sizes:
+            taskOutput:
+              taskId: Build list of integers 2
+              outputName: Output
+      Train pytorch model from csv:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/603342c4b88fe2d69ff07682f702cd3601e883bb/components/PyTorch/Train_PyTorch_model/from_CSV/component.yaml'
+        annotations:
+          editor.position: '{"x":160,"y":910,"width":180,"height":40}'
+        arguments:
+          model:
+            taskOutput:
+              taskId: Create fully connected pytorch network
+              outputName: network
+          label_column_name: tips
+          training_data:
+            taskOutput:
+              taskId: Pandas Transform DataFrame in CSV format
+              outputName: transformed_table
+      Train pytorch model from csv 2:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/603342c4b88fe2d69ff07682f702cd3601e883bb/components/PyTorch/Train_PyTorch_model/from_CSV/component.yaml'
+        annotations:
+          editor.position: '{"x":410,"y":910,"width":180,"height":40}'
+        arguments:
+          label_column_name: tips
+          model:
+            taskOutput:
+              taskId: Create fully connected pytorch network 2
+              outputName: network
+          training_data:
+            taskOutput:
+              taskId: Pandas Transform DataFrame in CSV format
+              outputName: transformed_table
+    outputValues: {}
