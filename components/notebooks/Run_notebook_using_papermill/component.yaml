@@ -43,9 +43,9 @@ implementation:
     - if:
         cond: {isPresent: Packages to install}
         then: [{inputValue: Packages to install}]
-        else: "{}"
+        else: ["[]"]
     - if:
         cond: {isPresent: Input data}
         then: [{inputPath: Input data}]
-        else: ""
+        else: [""]
     - {outputPath: Output data}
