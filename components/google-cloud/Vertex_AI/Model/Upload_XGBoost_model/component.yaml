@@ -1,0 +1,185 @@
+name: Upload XGBoost model to Google Cloud Vertex AI
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Model/Upload_XGBoost_model/component.yaml'}
+inputs:
+- {name: model, type: XGBoostModel}
+- {name: xgboost_version, type: String, optional: true}
+- {name: display_name, type: String, optional: true}
+- {name: description, type: String, optional: true}
+- {name: project, type: String, optional: true}
+- {name: location, type: String, default: us-central1, optional: true}
+- {name: labels, type: JsonObject, optional: true}
+- {name: staging_bucket, type: String, optional: true}
+outputs:
+- {name: model_name, type: GoogleCloudVertexAiModelName}
+- {name: model_dict, type: JsonObject}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'git+https://github.com/Ark-kun/python-aiplatform@8f61efb3a7903a6e0ef47d957f26ef3083581c7e#egg=google-cloud-aiplatform&subdirectory=.'
+      'google-api-python-client==2.29.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'git+https://github.com/Ark-kun/python-aiplatform@8f61efb3a7903a6e0ef47d957f26ef3083581c7e#egg=google-cloud-aiplatform&subdirectory=.'
+      'google-api-python-client==2.29.0' --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def upload_XGBoost_model_to_Google_Cloud_Vertex_AI(
+          model_path,
+          xgboost_version = None,
+
+          display_name = None,
+          description = None,
+
+          # Uncomment when anyone requests these:
+          # instance_schema_uri: str = None,
+          # parameters_schema_uri: str = None,
+          # prediction_schema_uri: str = None,
+          # explanation_metadata: "google.cloud.aiplatform_v1.types.explanation_metadata.ExplanationMetadata" = None,
+          # explanation_parameters: "google.cloud.aiplatform_v1.types.explanation.ExplanationParameters" = None,
+
+          project = None,
+          location = "us-central1",
+          labels = None,
+          # encryption_spec_key_name: str = None,
+          staging_bucket = None,
+      ):
+          kwargs = locals()
+          kwargs.pop("model_path")
+
+          import json
+          import os
+          from google.cloud import aiplatform
+
+          # Problem: Unlike KFP, when running on Vertex AI, google.auth.default() returns incorrect GCP project ID.
+          # This leads to failure when trying to create any resource in the project.
+          # google.api_core.exceptions.PermissionDenied: 403 Permission 'aiplatform.models.upload' denied on resource '//aiplatform.googleapis.com/projects/gbd40bc90c7804989-tp/locations/us-central1' (or it may not exist).
+          # We can try and get the GCP project ID/number from the environment variables.
+          if not project:
+              project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
+              if project_number:
+                  print(f"Inferred project number: {project_number}")
+                  kwargs["project"] = project_number
+                  # To improve the naming we try to convert the project number into the user project ID.
+                  try:
+                      from googleapiclient import discovery
+
+                      cloud_resource_manager_service = discovery.build(
+                          "cloudresourcemanager", "v3"
+                      )
+                      project_id = (
+                          cloud_resource_manager_service.projects()
+                          .get(name=f"projects/{project_number}")
+                          .execute()["projectId"]
+                      )
+                      if project_id:
+                          print(f"Inferred project ID: {project_id}")
+                          kwargs["project"] = project_id
+                  except Exception as e:
+                      print(e)
+
+          if not location:
+              kwargs["location"] = os.environ.get("CLOUD_ML_REGION")
+
+          if not labels:
+              kwargs["labels"] = {}
+          kwargs["labels"]["component-source"] = "github-com-ark-kun-pipeline-components"
+
+          model = aiplatform.Model.upload_xgboost_model_file(
+              model_file_path=model_path,
+              **kwargs,
+          )
+          model_json = json.dumps(model.to_dict(), indent=2)
+          print(model_json)
+          return (model.name, model_json)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Upload XGBoost model to Google Cloud Vertex AI', description='')
+      _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--xgboost-version", dest="xgboost_version", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--display-name", dest="display_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--description", dest="description", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--project", dest="project", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--location", dest="location", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--labels", dest="labels", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--staging-bucket", dest="staging_bucket", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=2)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = upload_XGBoost_model_to_Google_Cloud_Vertex_AI(**_parsed_args)
+
+      _output_serializers = [
+          str,
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --model
+    - {inputPath: model}
+    - if:
+        cond: {isPresent: xgboost_version}
+        then:
+        - --xgboost-version
+        - {inputValue: xgboost_version}
+    - if:
+        cond: {isPresent: display_name}
+        then:
+        - --display-name
+        - {inputValue: display_name}
+    - if:
+        cond: {isPresent: description}
+        then:
+        - --description
+        - {inputValue: description}
+    - if:
+        cond: {isPresent: project}
+        then:
+        - --project
+        - {inputValue: project}
+    - if:
+        cond: {isPresent: location}
+        then:
+        - --location
+        - {inputValue: location}
+    - if:
+        cond: {isPresent: labels}
+        then:
+        - --labels
+        - {inputValue: labels}
+    - if:
+        cond: {isPresent: staging_bucket}
+        then:
+        - --staging-bucket
+        - {inputValue: staging_bucket}
+    - '----output-paths'
+    - {outputPath: model_name}
+    - {outputPath: model_dict}
