@@ -174,6 +174,7 @@ def train_tabular_model_using_Google_Cloud_Vertex_AI_AutoML(
 
     import datetime
     import logging
+    import os
 
     from google.cloud import aiplatform
     from google.protobuf import json_format
@@ -182,6 +183,33 @@ def train_tabular_model_using_Google_Cloud_Vertex_AI_AutoML(
 
     if not model_display_name:
         model_display_name = 'TablesModel_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
+
+    # Problem: Unlike KFP, when running on Vertex AI, google.auth.default() returns incorrect GCP project ID.
+    # This leads to failure when trying to create any resource in the project.
+    # google.api_core.exceptions.PermissionDenied: 403 Permission 'aiplatform.models.upload' denied on resource '//aiplatform.googleapis.com/projects/gbd40bc90c7804989-tp/locations/us-central1' (or it may not exist).
+    # We can try and get the GCP project ID/number from the environment variables.
+    if not project:
+        project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
+        if project_number:
+            print(f"Inferred project number: {project_number}")
+            project = project_number
+            # To improve the naming we try to convert the project number into the user project ID.
+            try:
+                from googleapiclient import discovery
+
+                cloud_resource_manager_service = discovery.build(
+                    "cloudresourcemanager", "v3"
+                )
+                project_id = (
+                    cloud_resource_manager_service.projects()
+                    .get(name=f"projects/{project_number}")
+                    .execute()["projectId"]
+                )
+                if project_id:
+                    print(f"Inferred project ID: {project_id}")
+                    project = project_id
+            except Exception as e:
+                print(e)
 
     aiplatform.init(
         project=project,
@@ -222,8 +250,10 @@ if __name__ == '__main__':
     train_tabular_model_using_Google_Cloud_Vertex_AI_AutoML_op = create_component_from_func(
         train_tabular_model_using_Google_Cloud_Vertex_AI_AutoML,
         base_image='python:3.9',
-        # TODO: Update after my fix for TabularDataset.column_names bug is released https://github.com/googleapis/python-aiplatform/pull/590
-        packages_to_install=['git+https://github.com/googleapis/python-aiplatform.git@refs/pull/590/head'],
+        packages_to_install=[
+            "google-cloud-aiplatform==1.6.2",
+            "google-api-python-client==2.29.0",  # For project number -> project ID conversion
+        ],
         output_component_file='component.yaml',
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

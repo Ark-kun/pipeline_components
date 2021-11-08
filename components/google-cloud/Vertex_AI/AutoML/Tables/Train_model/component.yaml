@@ -165,10 +165,9 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'git+https://github.com/googleapis/python-aiplatform.git@refs/pull/590/head'
-      || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'git+https://github.com/googleapis/python-aiplatform.git@refs/pull/590/head'
-      --user) && "$0" "$@"
+      'google-cloud-aiplatform==1.6.2' 'google-api-python-client==2.29.0' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform==1.6.2'
+      'google-api-python-client==2.29.0' --user) && "$0" "$@"
     - sh
     - -ec
     - |
@@ -345,6 +344,7 @@ implementation:
 
           import datetime
           import logging
+          import os
 
           from google.cloud import aiplatform
           from google.protobuf import json_format
@@ -353,6 +353,33 @@ implementation:
 
           if not model_display_name:
               model_display_name = 'TablesModel_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
+
+          # Problem: Unlike KFP, when running on Vertex AI, google.auth.default() returns incorrect GCP project ID.
+          # This leads to failure when trying to create any resource in the project.
+          # google.api_core.exceptions.PermissionDenied: 403 Permission 'aiplatform.models.upload' denied on resource '//aiplatform.googleapis.com/projects/gbd40bc90c7804989-tp/locations/us-central1' (or it may not exist).
+          # We can try and get the GCP project ID/number from the environment variables.
+          if not project:
+              project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
+              if project_number:
+                  print(f"Inferred project number: {project_number}")
+                  project = project_number
+                  # To improve the naming we try to convert the project number into the user project ID.
+                  try:
+                      from googleapiclient import discovery
+
+                      cloud_resource_manager_service = discovery.build(
+                          "cloudresourcemanager", "v3"
+                      )
+                      project_id = (
+                          cloud_resource_manager_service.projects()
+                          .get(name=f"projects/{project_number}")
+                          .execute()["projectId"]
+                      )
+                      if project_id:
+                          print(f"Inferred project ID: {project_id}")
+                          project = project_id
+                  except Exception as e:
+                      print(e)
 
           aiplatform.init(
               project=project,
