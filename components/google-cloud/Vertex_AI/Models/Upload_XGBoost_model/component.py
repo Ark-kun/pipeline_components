@@ -94,7 +94,7 @@ if __name__ == "__main__":
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
-            "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Model/Upload_XGBoost_model/component.yaml",
+            "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Models/Upload_XGBoost_model/component.yaml",
         },
         output_component_file="component.yaml",
     )
