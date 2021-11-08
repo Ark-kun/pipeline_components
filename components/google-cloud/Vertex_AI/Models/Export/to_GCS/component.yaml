@@ -1,0 +1,95 @@
+name: Export model to GCS for Google Cloud Vertex AI Model
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Models/Export/to_GCS/component.yaml'}
+inputs:
+- {name: model_name, type: GoogleCloudVertexAiModelName}
+- {name: output_prefix_gcs_uri, type: String}
+- {name: export_format, type: String, optional: true}
+outputs:
+- {name: model_dir_uri, type: String}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'google-cloud-aiplatform==1.6.2' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform==1.6.2'
+      --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def export_model_to_GCS_for_Google_Cloud_Vertex_AI_Model(
+          model_name,
+          output_prefix_gcs_uri,  # GoogleCloudStorageURI
+          export_format = None,
+      ):
+          # Choose output_prefix_gcs_uri properly to avoid the following error:
+          # google.api_core.exceptions.FailedPrecondition: 400 The Cloud Storage bucket of `gs://<output_prefix_gcs_uri>/model-7972079425934065664/tf-saved-model/2021-11-08T10:44:57.671790Z` is in location `us`.
+          # It must be in the same regional location as the service location `us-central1`.
+          from google.cloud import aiplatform
+
+          model = aiplatform.Model(model_name=model_name)
+
+          print("Available export formats:")
+          print(model.supported_export_formats)
+          if not export_format:
+              export_format = list(model.supported_export_formats.keys())[0]
+              print(f"Auto-selected export formats: {export_format}")
+
+          result = model.export_model(
+              export_format_id=export_format,
+              artifact_destination=output_prefix_gcs_uri,
+          )
+
+          # == "gs://<artifact_destination>/model-7972079425934065664/tf-saved-model/2021-11-08T00:54:18.367871Z"
+          artifact_output_uri = result["artifactOutputUri"]
+
+          return (artifact_output_uri,)
+
+      def _serialize_str(str_value: str) -> str:
+          if not isinstance(str_value, str):
+              raise TypeError('Value "{}" has type "{}" instead of str.'.format(str(str_value), str(type(str_value))))
+          return str_value
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Export model to GCS for Google Cloud Vertex AI Model', description='')
+      _parser.add_argument("--model-name", dest="model_name", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--output-prefix-gcs-uri", dest="output_prefix_gcs_uri", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--export-format", dest="export_format", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = export_model_to_GCS_for_Google_Cloud_Vertex_AI_Model(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_str,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --model-name
+    - {inputValue: model_name}
+    - --output-prefix-gcs-uri
+    - {inputValue: output_prefix_gcs_uri}
+    - if:
+        cond: {isPresent: export_format}
+        then:
+        - --export-format
+        - {inputValue: export_format}
+    - '----output-paths'
+    - {outputPath: model_dir_uri}
