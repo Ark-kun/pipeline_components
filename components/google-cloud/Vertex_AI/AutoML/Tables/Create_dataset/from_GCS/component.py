@@ -40,6 +40,7 @@ def create_tabular_dataset_from_GCS_for_Google_Cloud_Vertex_AI(
     import datetime
     import json
     import logging
+    import os
 
     from google.cloud import aiplatform
     from google.protobuf import json_format
@@ -56,6 +57,19 @@ def create_tabular_dataset_from_GCS_for_Google_Cloud_Vertex_AI(
         data_uris = json.loads(data_uri)
     else:
         data_uris = [data_uri]
+
+    # Problem: Unlike KFP, when running on Vertex AI, google.auth.default() returns incorrect GCP project ID.
+    # This leads to failure when trying to create any resource in the project.
+    # google.api_core.exceptions.PermissionDenied: 403 Permission 'aiplatform.models.upload' denied on resource '//aiplatform.googleapis.com/projects/gbd40bc90c7804989-tp/locations/us-central1' (or it may not exist).
+    # We can try and get the GCP project ID/number from the environment variables.
+    if not project:
+        project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
+        if project_number:
+            print(f"Inferred project number: {project_number}")
+            project = project_number
+
+    if not location:
+        location = os.environ.get("CLOUD_ML_REGION")
 
     aiplatform.init(
         project=project,
