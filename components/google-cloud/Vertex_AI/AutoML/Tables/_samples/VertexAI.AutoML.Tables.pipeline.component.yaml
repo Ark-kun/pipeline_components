@@ -1,0 +1,58 @@
+name: Vertex AI AutoML Tables pipeline
+metadata:
+  annotations:
+    sdk: 'https://cloud-pipelines.net/pipeline-editor/'
+inputs: []
+implementation:
+  graph:
+    tasks:
+      Chicago Taxi Trips dataset:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipelines/2463ecda532517462590d75e6e14a8af6b55869a/components/datasets/Chicago_Taxi_Trips/component.yaml'
+        annotations:
+          editor.position: '{"x":60,"y":100,"width":180,"height":40}'
+        arguments:
+          Select: 'tips,trip_seconds,trip_miles,pickup_community_area,dropoff_community_area,fare,tolls,extras'
+      Create tabular dataset from CSV for Google Cloud Vertex AI:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/47f3621344c884666a926c8a15d77562f1cc5e0a/components/google-cloud/Vertex_AI/AutoML/Tables/Create_dataset/from_CSV/component.yaml'
+        annotations:
+          editor.position: '{"x":60,"y":220,"width":180,"height":70}'
+        arguments:
+          data:
+            taskOutput:
+              taskId: Chicago Taxi Trips dataset
+              outputName: Table
+      Train tabular model using Google Cloud Vertex AI AutoML:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/47f3621344c884666a926c8a15d77562f1cc5e0a/components/google-cloud/Vertex_AI/AutoML/Tables/Train_model/component.yaml'
+        annotations:
+          editor.position: '{"x":60,"y":380,"width":180,"height":70}'
+        arguments:
+          target_column: tips
+          optimization_prediction_type: regression
+          dataset_name:
+            taskOutput:
+              taskId: Create tabular dataset from CSV for Google Cloud Vertex AI
+              outputName: dataset_name
+      Deploy model to endpoint for Google Cloud Vertex AI Model:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/b2cdd60fe93d609111729ef64e79a8b8a2713435/components/google-cloud/Vertex_AI/Models/Deploy_to_endpoint/component.yaml'
+        annotations:
+          editor.position: '{"x":60,"y":530,"width":180,"height":70}'
+        arguments:
+          model_name:
+            taskOutput:
+              taskId: Train tabular model using Google Cloud Vertex AI AutoML
+              outputName: model_name
+      Get model tuning trials for Google Cloud Vertex AI AutoML Tables:
+        componentRef:
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/47f3621344c884666a926c8a15d77562f1cc5e0a/components/google-cloud/Vertex_AI/AutoML/Tables/Get_model_tuning_trials/component.yaml'
+        annotations:
+          editor.position: '{"x":270,"y":530,"width":180,"height":70}'
+        arguments:
+          model_name:
+            taskOutput:
+              taskId: Train tabular model using Google Cloud Vertex AI AutoML
+              outputName: model_name
+    outputValues: {}
