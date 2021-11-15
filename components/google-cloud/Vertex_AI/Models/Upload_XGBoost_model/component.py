@@ -73,7 +73,7 @@ def upload_XGBoost_model_to_Google_Cloud_Vertex_AI(
     )
     model_json = json.dumps(model.to_dict(), indent=2)
     print(model_json)
-    return (model.name, model_json)
+    return (model.resource_name, model_json)
 
 
 if __name__ == "__main__":
