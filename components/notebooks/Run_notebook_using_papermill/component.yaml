@@ -36,7 +36,7 @@ implementation:
       sh -c "python3 -m pip install --upgrade --quiet jupyter papermill==2.2.0 ${packages_to_install}"
       # Running the notebook using papermill
       papermill --parameters_yaml "$arguments" --parameters INPUT_DATA_PATH "$input_data_path" --parameters OUTPUT_DATA_PATH "$output_data_path" "$input_notebook_path" "$output_notebook_path"
-      
+
     - {inputPath: Notebook}
     - {outputPath: Notebook}
     - {inputValue: Parameters}

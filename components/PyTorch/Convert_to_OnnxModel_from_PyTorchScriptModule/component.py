@@ -23,7 +23,7 @@ def convert_to_onnx_from_pytorch_script_module(
         example_outputs=example_outputs,
     )
 
-    
+
 if __name__ == '__main__':
     convert_to_onnx_from_pytorch_script_module_op = create_component_from_func(
         convert_to_onnx_from_pytorch_script_module,

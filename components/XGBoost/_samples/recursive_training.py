@@ -37,7 +37,7 @@ def train_until_low_error(starting_model, training_data, true_values):
         label_column=0,
     ).output
 
-    # Calculating the regression metrics    
+    # Calculating the regression metrics
     metrics_task = calculate_regression_metrics_from_csv_op(
         true_values=true_values,
         predicted_values=predictions,
@@ -67,7 +67,7 @@ def train_until_good_pipeline():
         table=training_data,
         transform_code='df = df[["tips"]]',
     ).output
-    
+
     true_values = drop_header_op(true_values_table).output
 
     # Initial model training

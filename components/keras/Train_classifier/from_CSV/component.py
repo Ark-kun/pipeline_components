@@ -34,7 +34,7 @@ def keras_train_classifier_from_csv(
 
     tensorflow.random.set_seed(random_seed)
     numpy.random.seed(random_seed)
-    
+
     training_features_df = pandas.read_csv(training_features_path)
     training_labels_df = pandas.read_csv(training_labels_path)
 

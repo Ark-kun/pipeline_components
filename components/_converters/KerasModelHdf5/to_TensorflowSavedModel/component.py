@@ -15,7 +15,7 @@ def keras_convert_hdf5_model_to_tf_saved_model(
     '''
     from pathlib import Path
     from tensorflow import keras
-    
+
     model = keras.models.load_model(filepath=model_path)
     keras.models.save_model(model=model, filepath=converted_model_path, save_format='tf')
 

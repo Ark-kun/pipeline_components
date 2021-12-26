@@ -19,7 +19,7 @@ def xgboost_train_and_cv_regression_on_csv(
         objective=objective,
         num_iterations=num_iterations,
     )
-    
+
     cv_training_and_metrics_task = xgboost_5_fold_cross_validation_for_regression_op(
         data=data,
         label_column=label_column,

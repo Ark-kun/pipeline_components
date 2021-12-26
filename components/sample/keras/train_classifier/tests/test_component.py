@@ -35,7 +35,7 @@ class KerasTrainClassifierTestCase(unittest.TestCase):
         tests_root = os.path.abspath(os.path.dirname(__file__))
         component_root = os.path.abspath(os.path.join(tests_root, '..'))
         testdata_root = os.path.abspath(os.path.join(tests_root, 'testdata'))
-        
+
         train_op = comp.load_component(os.path.join(component_root, 'component.yaml'))
 
         with tempfile.TemporaryDirectory() as temp_dir_name:

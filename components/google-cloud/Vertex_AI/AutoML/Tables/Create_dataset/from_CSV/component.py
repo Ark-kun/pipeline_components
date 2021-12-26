@@ -74,14 +74,14 @@ def create_tabular_dataset_from_CSV_for_Google_Cloud_Vertex_AI(
 
     if not location:
         location = os.environ.get("CLOUD_ML_REGION")
-    
+
     aiplatform.init(
         project=project,
         location=location,
         staging_bucket=staging_bucket,
         encryption_spec_key_name=encryption_spec_key_name,
     )
-    
+
     # Stage the data
     # The file needs to have .CSV extension, so we need to rename or link it.
     staging_dir = tempfile.mkdtemp()

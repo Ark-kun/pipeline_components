@@ -37,10 +37,10 @@ def regression_metrics_pipeline():
         table=training_data_csv,
         transform_code='''df = df[["tips"]]''',
     ).output
-    
+
     true_values = drop_header_op(true_values_table).output
 
-    # Calculating the regression metrics    
+    # Calculating the regression metrics
     calculate_regression_metrics_from_csv_op(
         true_values=true_values,
         predicted_values=predictions,

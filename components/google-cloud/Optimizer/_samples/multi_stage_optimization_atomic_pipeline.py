@@ -58,7 +58,7 @@ def train_and_measure_model(parameters: dict) -> float:
 
     eval_set = get_eval_set()
     sum_squared_error = 0
-    
+
     for x, expected_y in eval_set.items():
         actual_y = model(x)
         error = abs(expected_y - actual_y)

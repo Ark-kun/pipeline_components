@@ -17,7 +17,7 @@ implementation:
       model_path="$0"
       output_model_path="$1"
       mkdir -p "$(dirname "$output_model_path")"
-      
+
       tflite_convert --keras_model_file "$model_path" --output_file "$output_model_path"
     - {inputPath: Model}
     - {outputPath: Model}

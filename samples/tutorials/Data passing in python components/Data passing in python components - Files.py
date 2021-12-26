@@ -16,15 +16,15 @@
 # %% [markdown]
 # # Data passing tutorial
 # Data passing is the most important aspect of Pipelines.
-# 
+#
 # In Kubeflow Pipelines, the pipeline authors compose pipelines by creating component instances (tasks) and connecting them together.
-# 
+#
 # Component have inputs and outputs. They can consume and produce arbitrary data.
-# 
+#
 # Pipeline authors establish connections between component tasks by connecting their data inputs and outputs - by passing the output of one task as an argument to another task's input.
-# 
+#
 # The system takes care of storing the data produced by components and later passing that data to other components for consumption as instructed by the pipeline.
-# 
+#
 # This tutorial shows how to create python components that produce, consume and transform data.
 # It shows how to create data passing pipelines by instantiating components and connecting them together.
 
@@ -36,31 +36,31 @@ from kfp.components import func_to_container_op, InputPath, OutputPath
 
 # %% [markdown]
 # ## Small data
-# 
+#
 # Small data is the data that you'll be comfortable passing as program's command-line argument. Small data size should not exceed few kilobytes.
-# 
+#
 # Some examples of typical types of small data are: number, URL, small string (e.g. column name).
-# 
+#
 # Small lists, dictionaries and JSON structures are fine, but keep an eye on the size and consider switching to file-based data passing methods taht are more suitable for bigger data (more than several kilobytes) or binary data.
-# 
+#
 # All small data outputs will be at some point serialized to strings and all small data input values will be at some point deserialized from strings (passed as command-line argumants). There are built-in serializers and deserializers for several common types (e.g. `str`, `int`, `float`, `bool`, `list`, `dict`). All other types of data need to be serialized manually before returning the data. Make sure to properly specify type annotations, otherwize there would be no automatic deserialization and the component function will receive strings instead of deserialized objects.
 
 # %% [markdown]
 # ## Bigger data (files)
-# 
+#
 # Bigger data should be read from files and written to files.
-# 
+#
 # The paths for the input and output files are chosen by the system and are passed into the function (as strings).
-# 
+#
 # Use the `InputPath` parameter annotation to tell the system that the function wants to consume the corresponding input data as a file. The system will download the data, write it to a local file and then pass the **path** of that file to the function.
-# 
+#
 # Use the `OutputPath` parameter annotation to tell the system that the function wants to produce the corresponding output data as a file. The system will prepare and pass the **path** of a file where the function should write the output data. After the function exits, the system will upload the data to the storage system so that it can be passed to downstream components.
-# 
+#
 # You can specify the type of the consumed/produced data by specifying the type argument to `InputPath` and `OutputPath`. The type can be a python type or an arbitrary type name string. `OutputPath('TFModel')` means that the function states that the data it has written to a file has type 'TFModel'. `InputPath('TFModel')` means that the function states that it expect the data it reads from a file to have type 'TFModel'. When the pipeline author connects inputs to outputs the system checks whether the types match.
-# 
+#
 # Note on input/output names: When the function is converted to component, the input and output names generally follow the parameter names, but the "\_path" and "\_file" suffixes are stripped from file/path inputs and outputs. E.g. the `number_file_path: InputPath(int)` parameter becomes the `number: int` input. This makes the argument passing look more natural: `number=42` instead of `number_file_path=42`.
 # %% [markdown]
-# 
+#
 # ### Writing and reading bigger data
 
 # %%

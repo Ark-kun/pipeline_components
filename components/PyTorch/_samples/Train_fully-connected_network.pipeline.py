@@ -51,7 +51,7 @@ def pytorch_pipeline():
 
     # TODO: Use a real working regression handler here. See https://github.com/pytorch/serve/issues/987
     serving_handler = download_op('https://raw.githubusercontent.com/pytorch/serve/5c03e711a401387a1d42fc01072fcc38b4995b66/ts/torch_handler/base_handler.py').output
-    
+
     model_archive = create_pytorch_model_archive_op(
         model=trained_model,
         handler=serving_handler,

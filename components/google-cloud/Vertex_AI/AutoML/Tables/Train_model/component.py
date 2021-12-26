@@ -216,7 +216,7 @@ def train_tabular_model_using_Google_Cloud_Vertex_AI_AutoML(
         location=location,
         encryption_spec_key_name=encryption_spec_key_name,
     )
-    
+
     model = aiplatform.AutoMLTabularTrainingJob(
         display_name='AutoMLTabularTrainingJob_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S"),
         optimization_prediction_type=optimization_prediction_type,

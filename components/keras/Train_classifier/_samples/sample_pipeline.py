@@ -51,7 +51,7 @@ def keras_classifier_pipeline():
     keras_model_in_tf_format = keras_convert_hdf5_model_to_tf_saved_model_op(
         model=keras_model_in_hdf5,
     ).output
-    
+
 if __name__ == '__main__':
     kfp_endpoint = None
     kfp.Client(host=kfp_endpoint).create_run_from_pipeline_func(keras_classifier_pipeline, arguments={})

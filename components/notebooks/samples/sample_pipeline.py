@@ -7,8 +7,8 @@ download_op = components.load_component_from_url('https://raw.githubusercontent.
 run_notebook_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/4ebce5f643b6af5639053ea7eaed52b02bf7e928/components/notebooks/Run_notebook_using_papermill/component.yaml')
 
 def notebook_pipeline():
-    notebook = download_op('https://raw.githubusercontent.com/kubeflow/pipelines/93fc34474bf989998cf19445149aca2847eee763/components/notebooks/samples/test_notebook.ipynb').output    
-    
+    notebook = download_op('https://raw.githubusercontent.com/kubeflow/pipelines/93fc34474bf989998cf19445149aca2847eee763/components/notebooks/samples/test_notebook.ipynb').output
+
     run_notebook_op(
         notebook=notebook,
         parameters={'param1': 'value 1'},

@@ -35,7 +35,7 @@ def get_model_tuning_trials_for_Google_Cloud_Vertex_AI_AutoML_Tables(
             model_structures.append(entry.payload)
         else:
             extra_entries.append(entry.payload)
-    
+
     # Manually serializing the results for pretty and stable output
     print("Tuning trials:")
     tuning_trials_json = json.dumps(tuning_trials, sort_keys=True, indent=2)

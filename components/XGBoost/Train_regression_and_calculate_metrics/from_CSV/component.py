@@ -48,7 +48,7 @@ def xgboost_train_regression_and_calculate_metrics_on_csv(
         ('metrics', metrics_task.outputs['metrics']),
     ])
 
-        
+
 if __name__ == '__main__':
     xgboost_train_regression_and_calculate_metrics_on_csv_op = components.create_graph_component_from_pipeline_func(
         xgboost_train_regression_and_calculate_metrics_on_csv,

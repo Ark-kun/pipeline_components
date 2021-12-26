@@ -55,7 +55,7 @@ def split_table_into_folds(
         random_state=random_seed,
     )
     folds = list(splitter.split(df))
-    
+
     fold_paths = [
         (train_1_path, test_1_path),
         (train_2_path, test_2_path),

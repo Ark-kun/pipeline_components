@@ -19,13 +19,13 @@ implementation:
       hash_algorithm="$1"
       hash_path="$2"
       mkdir -p "$(dirname "$hash_path")"
-      
+
       hash_algorithm=$(echo "$hash_algorithm" | tr '[:upper:]' '[:lower:]')
       case "$hash_algorithm" in
           md5|sha1|sha256|sha512|sha3)  hash_program="${hash_algorithm}sum";;
           *)  echo "Unsupported hash algorithm $hash_algorithm"; exit 1;;
       esac
-      
+
       if [ -d "$data_path" ]; then
           # Calculating hash for directory
           cd "$data_path"
@@ -33,7 +33,7 @@ implementation:
               sort -z |
               xargs -0 "$hash_program" |
               "$hash_program" |
-              cut -d ' ' -f 1 > "$hash_path"         
+              cut -d ' ' -f 1 > "$hash_path"
       else
           # Calculating hash for file
           "$hash_program" "$data_path" |

@@ -56,7 +56,7 @@ def create_dataset_from_GCS_for_Google_Cloud_AutoML_Tables(
         logging.warn('AutoML only supports the us-central1 region')
     if not dataset_display_name:
         dataset_display_name = 'Dataset_' + datetime.datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")
-    
+
     # Hack to enable passing multiple URIs
     # I could have created another component or added another input, but it seems to be too much hassle for now.
     # An alternative would have been to accept comma-delimited or semicolon-delimited URLs.

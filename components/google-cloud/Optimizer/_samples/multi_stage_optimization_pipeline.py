@@ -134,7 +134,7 @@ def optimizer_pipeline(
             )
 
             trial_measurement_tasks.append(add_measurement_task)
-    
+
 
 if __name__ == '__main__':
     kfp.Client(host=kfp_endpoint).create_run_from_pipeline_func(optimizer_pipeline, arguments={})

@@ -12,7 +12,7 @@ def convert_to_tensorflow_saved_model_from_onnx_model(
     tf_rep = onnx_tf.backend.prepare(onnx_model)
     tf_rep.export_graph(converted_model_path)
 
-    
+
 if __name__ == '__main__':
     convert_to_tensorflow_saved_model_from_onnx_model_op = create_component_from_func(
         convert_to_tensorflow_saved_model_from_onnx_model,

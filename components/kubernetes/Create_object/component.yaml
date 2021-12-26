@@ -25,7 +25,7 @@ implementation:
       mkdir -p "$(dirname "$output_object_path")"
 
       kubectl create -f "$object_path" --output=json > "$output_object_path"
-      
+
       < "$output_object_path" jq '.metadata.name' --raw-output > "$output_name_path"
       < "$output_object_path" jq '.kind' --raw-output > "$output_kind_path"
 
