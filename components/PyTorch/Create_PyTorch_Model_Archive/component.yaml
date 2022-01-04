@@ -12,7 +12,7 @@ metadata:
     canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/PyTorch/Create_PyTorch_Model_Archive/component.yaml'
 implementation:
   container:
-    image: pytorch/torchserve:0.3.0-cpu
+    image: pytorch/torchserve:0.5.2-cpu
     command:
     - bash
     - -exc
