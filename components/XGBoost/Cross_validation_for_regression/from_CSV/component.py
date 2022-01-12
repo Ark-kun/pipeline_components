@@ -2,13 +2,13 @@ from collections import OrderedDict
 from kfp import components
 
 
-split_table_into_folds_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/e9b4b29b22a5120daf95b581b0392cd461a906f0/components/dataset_manipulation/split_data_into_folds/in_CSV/component.yaml')
-xgboost_train_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/567c04c51ff00a1ee525b3458425b17adbe3df61/components/XGBoost/Train/component.yaml')
-xgboost_predict_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/567c04c51ff00a1ee525b3458425b17adbe3df61/components/XGBoost/Predict/component.yaml')
-pandas_transform_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/6162d55998b176b50267d351241100bb0ee715bc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml')
-drop_header_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/02c9638287468c849632cf9f7885b51de4c66f86/components/tables/Remove_header/component.yaml')
-calculate_regression_metrics_from_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/7da1ac9464b4b3e7d95919faa2f1107a9635b7e4/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml')
-aggregate_regression_metrics_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/7ea9363fe201918d419fecdc00d1275e657ff712/components/ml_metrics/Aggregate_regression_metrics/component.yaml')
+split_table_into_folds_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/dataset_manipulation/split_data_into_folds/in_CSV/component.yaml')
+xgboost_train_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml')
+xgboost_predict_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml')
+pandas_transform_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml')
+drop_header_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml')
+calculate_regression_metrics_from_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml')
+aggregate_regression_metrics_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Aggregate_regression_metrics/component.yaml')
 
 
 def xgboost_5_fold_cross_validation_for_regression(

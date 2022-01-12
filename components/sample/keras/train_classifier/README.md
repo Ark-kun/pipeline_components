@@ -29,7 +29,7 @@ import requests
 
 import kfp
 
-component_url_prefix = 'https://raw.githubusercontent.com/kubeflow/pipelines/master/components/sample/keras/train_classifier/'
+component_url_prefix = 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/52305d01748c4d1adb44685686065d3711e0e738/components/sample/keras/train_classifier/'
 test_data_url_prefix = component_url_prefix + 'tests/testdata/'
 
 #Prepare input/output paths and data
@@ -59,7 +59,7 @@ xor_model_config = requests.get(test_data_url_prefix + 'model_config.json').cont
 
 
 #Load the component
-train_op = kfp.components.load_component_from_url(component_url_prefix + 'component.yaml')
+train_op = kfp.components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/52305d01748c4d1adb44685686065d3711e0e738/components/sample/keras/train_classifier/component.yaml')
 
 #Use the component as part of the pipeline
 @kfp.dsl.pipeline(name='Test keras/train_classifier', description='Pipeline to test keras/train_classifier component')

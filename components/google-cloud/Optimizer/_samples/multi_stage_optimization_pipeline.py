@@ -14,9 +14,9 @@ optimizer_create_study_op = components.load_component_from_url('https://raw.gith
 optimizer_suggest_trials_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/b3ec80d64938960d8caa4f1ba1ae1bbcc583e0b2//components/google-cloud/Optimizer/Suggest_trials/component.yaml')
 optimizer_add_measurement_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/b3ec80d64938960d8caa4f1ba1ae1bbcc583e0b2//components/google-cloud/Optimizer/Add_measurement_for_trial/component.yaml')
 
-get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/55ef28a9d51edc4eeed2a5c6f44cc7457e8a41d8/components/json/Get_element_by_index/component.yaml')
-get_element_by_key_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/55ef28a9d51edc4eeed2a5c6f44cc7457e8a41d8/components/json/Get_element_by_key/component.yaml')
-query_json_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/55ef28a9d51edc4eeed2a5c6f44cc7457e8a41d8/components/json/Query/component.yaml')
+get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/dcf4fdde4876e8d76aa0131ad4d67c47b2b5591a/components/json/Get_element_by_index/component.yaml')
+get_element_by_key_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/dcf4fdde4876e8d76aa0131ad4d67c47b2b5591a/components/json/Get_element_by_key/component.yaml')
+query_json_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Query/component.yaml')
 
 
 # Component that builds a model given the [hyper]parameters and evaluates that model.

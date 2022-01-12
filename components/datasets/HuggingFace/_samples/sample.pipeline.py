@@ -2,8 +2,8 @@ from kfp import components
 from kfp import dsl
 
 
-load_dataset_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/d0e14a1dad4b851ad2a60a0c1a8201493f3d931c/components/datasets/HuggingFace/Load_dataset/component.yaml')
-split_dataset_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/d0e14a1dad4b851ad2a60a0c1a8201493f3d931c/components/datasets/HuggingFace/Split_dataset/component.yaml')
+load_dataset_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/datasets/HuggingFace/Load_dataset/component.yaml')
+split_dataset_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/datasets/HuggingFace/Split_dataset/component.yaml')
 
 
 def huggingface_pipeline():

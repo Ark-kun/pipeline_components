@@ -20,7 +20,7 @@ implementation:
     tasks:
       Xgboost train:
         componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
-          url: 'https://raw.githubusercontent.com/kubeflow/pipelines/567c04c51ff00a1ee525b3458425b17adbe3df61/components/XGBoost/Train/component.yaml'}
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
             graphInput: {inputName: training_data}
@@ -32,7 +32,7 @@ implementation:
             graphInput: {inputName: objective}
       Xgboost predict:
         componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
-          url: 'https://raw.githubusercontent.com/kubeflow/pipelines/567c04c51ff00a1ee525b3458425b17adbe3df61/components/XGBoost/Predict/component.yaml'}
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
             graphInput: {inputName: testing_data}
@@ -42,21 +42,21 @@ implementation:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format:
         componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
-          url: 'https://raw.githubusercontent.com/kubeflow/pipelines/6162d55998b176b50267d351241100bb0ee715bc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             graphInput: {inputName: testing_data}
           transform_code: df = df[["tips"]]
       Remove header:
         componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
-          url: 'https://raw.githubusercontent.com/kubeflow/pipelines/02c9638287468c849632cf9f7885b51de4c66f86/components/tables/Remove_header/component.yaml'}
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format, type: CSV}
       Calculate regression metrics from csv:
         componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
-          url: 'https://raw.githubusercontent.com/kubeflow/pipelines/7da1ac9464b4b3e7d95919faa2f1107a9635b7e4/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header}

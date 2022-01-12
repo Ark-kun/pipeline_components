@@ -18,12 +18,12 @@ import kfp
 from kfp import components
 
 
-suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/b3ec80d64938960d8caa4f1ba1ae1bbcc583e0b2/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
+suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/1b87c0bdfde5d7ec039401af8561783432731402/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
 
-get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/55ef28a9d51edc4eeed2a5c6f44cc7457e8a41d8/components/json/Get_element_by_index/component.yaml')
-build_dict_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/4a4be6b748b0d1284d65a417ce4ab5bec596e9fe/components/json/Build_dict/component.yaml')
-build_list_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/4a4be6b748b0d1284d65a417ce4ab5bec596e9fe/components/json/Build_list/component.yaml')
-combine_lists_op = components.load_component_from_url('https://raw.githubusercontent.com/kubeflow/pipelines/4a4be6b748b0d1284d65a417ce4ab5bec596e9fe/components/json/Combine_lists/component.yaml')
+get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/dcf4fdde4876e8d76aa0131ad4d67c47b2b5591a/components/json/Get_element_by_index/component.yaml')
+build_dict_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Build_dict/component.yaml')
+build_list_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Build_list/component.yaml')
+combine_lists_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Combine_lists/component.yaml')
 
 
 # The train_and_measure_model is a semi-dummy component that creates a model given the [hyper]parameters and evaluates that model.

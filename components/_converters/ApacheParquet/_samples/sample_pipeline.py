@@ -1,7 +1,7 @@
 import kfp
 from kfp import components
 
-component_store = components.ComponentStore(url_search_prefixes=['https://raw.githubusercontent.com/kubeflow/pipelines/af3eaf64e87313795cad1add9bfd9fa1e86af6de/components/'])
+component_store = components.ComponentStore(url_search_prefixes=['https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/'])
 
 chicago_taxi_dataset_op = component_store.load_component(name='datasets/Chicago_Taxi_Trips')
 convert_csv_to_apache_parquet_op = component_store.load_component(name='_converters/ApacheParquet/from_CSV')
