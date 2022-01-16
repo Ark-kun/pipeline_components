@@ -2,8 +2,8 @@ from collections import OrderedDict
 from kfp import components
 
 
-xgboost_train_regression_and_calculate_metrics_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train_regression_and_calculate_metrics/from_CSV/component.yaml')
-xgboost_5_fold_cross_validation_for_regression_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Cross_validation_for_regression/from_CSV/component.yaml')
+xgboost_train_regression_and_calculate_metrics_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/8d0c9ca704a5a56757a1852495b1c7e2e00fbfab/components/XGBoost/Train_regression_and_calculate_metrics/from_CSV/component.yaml')
+xgboost_5_fold_cross_validation_for_regression_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/8d0c9ca704a5a56757a1852495b1c7e2e00fbfab/components/XGBoost/Cross_validation_for_regression/from_CSV/component.yaml')
 
 
 def xgboost_train_and_cv_regression_on_csv(

@@ -62,10 +62,10 @@ implementation:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict, type: Predictions}
       Split table into folds:
         componentRef: {digest: 9956223bcecc7294ca1afac39b60ada4a935a571d817c3dfbf2ea4a211afe3d1,
-          url: 'https://raw.githubusercontent.com/kubeflow/pipelines/e9b4b29b22a5120daf95b581b0392cd461a906f0/components/dataset_manipulation/split_data_into_folds/in_CSV/component.yaml'}
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/dataset_manipulation/split_data_into_folds/in_CSV/component.yaml'}
         arguments:
           table:
             graphInput: {inputName: data}
@@ -112,7 +112,7 @@ implementation:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 2}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 2, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 2, type: Predictions}
       Xgboost train 3:
         componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
@@ -156,7 +156,7 @@ implementation:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 3}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 3, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 3, type: Predictions}
       Xgboost train 4:
         componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
@@ -200,7 +200,7 @@ implementation:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 4}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 4, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 4, type: Predictions}
       Xgboost train 5:
         componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
@@ -244,7 +244,7 @@ implementation:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 5}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 5, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 5, type: Predictions}
       Xgboost train 6:
         componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
@@ -288,8 +288,8 @@ implementation:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 6}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 6, type: Text}
-      Aggregate regression metrics from csv:
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 6, type: Predictions}
+      Aggregate regression metrics:
         componentRef: {digest: 3e128130521eff8d43764f3dcb037316cdd6490ad2878df5adef416f7c2f3c19,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Aggregate_regression_metrics/component.yaml'}
         arguments:
@@ -325,13 +325,12 @@ implementation:
             csv, type: JsonObject}
       cv_mean_absolute_error:
         taskOutput: {outputName: mean_absolute_error, taskId: Aggregate regression
-            metrics from csv, type: Float}
+            metrics, type: Float}
       cv_mean_squared_error:
         taskOutput: {outputName: mean_squared_error, taskId: Aggregate regression
-            metrics from csv, type: Float}
+            metrics, type: Float}
       cv_root_mean_squared_error:
         taskOutput: {outputName: root_mean_squared_error, taskId: Aggregate regression
-            metrics from csv, type: Float}
+            metrics, type: Float}
       cv_metrics:
-        taskOutput: {outputName: metrics, taskId: Aggregate regression metrics from
-            csv, type: JsonObject}
+        taskOutput: {outputName: metrics, taskId: Aggregate regression metrics, type: JsonObject}

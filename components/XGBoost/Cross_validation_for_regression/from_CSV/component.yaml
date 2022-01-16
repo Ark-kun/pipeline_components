@@ -1,4 +1,6 @@
 name: Xgboost 5 fold cross validation for regression
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Cross_validation_for_regression/from_CSV/component.yaml'}
 inputs:
 - {name: data, type: CSV}
 - {name: label_column, type: Integer, default: '0', optional: true}
@@ -9,21 +11,17 @@ outputs:
 - {name: mean_squared_error, type: Float}
 - {name: root_mean_squared_error, type: Float}
 - {name: metrics, type: JsonObject}
-metadata:
-  annotations:
-    author: Alexey Volkov <alexey.volkov@ark-kun.com>
-    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Cross_validation_for_regression/from_CSV/component.yaml'
 implementation:
   graph:
     tasks:
       Split table into folds:
-        componentRef: {digest: 9956223bcecc7294ca1afac39b60ada4a935a571d817c3dfbf2ea4a211afe3d1,
+        componentRef: {digest: 46eff5c8c007ed9f6358c49c86dd335164043cca0c643828b698c875c0b29e11,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/dataset_manipulation/split_data_into_folds/in_CSV/component.yaml'}
         arguments:
           table:
             graphInput: {inputName: data}
       Xgboost train:
-        componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
+        componentRef: {digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
@@ -35,7 +33,7 @@ implementation:
           objective:
             graphInput: {inputName: objective}
       Xgboost predict:
-        componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
+        componentRef: {digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
@@ -45,29 +43,29 @@ implementation:
           label_column:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format:
-        componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: test_1, taskId: Split table into folds, type: CSV}
           transform_code: df = df[["tips"]]
       Remove header:
-        componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format, type: CSV}
       Calculate regression metrics from csv:
-        componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
+        componentRef: {digest: 944def5d4b82aaeee38ac5c171f5e4007d639cfa00e065443dba684a38f7cf7e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict, type: Predictions}
       Xgboost train 2:
-        componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
+        componentRef: {digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
@@ -79,7 +77,7 @@ implementation:
           objective:
             graphInput: {inputName: objective}
       Xgboost predict 2:
-        componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
+        componentRef: {digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
@@ -89,29 +87,29 @@ implementation:
           label_column:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format 2:
-        componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: test_2, taskId: Split table into folds, type: CSV}
           transform_code: df = df[["tips"]]
       Remove header 2:
-        componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format 2, type: CSV}
       Calculate regression metrics from csv 2:
-        componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
+        componentRef: {digest: 944def5d4b82aaeee38ac5c171f5e4007d639cfa00e065443dba684a38f7cf7e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 2}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 2, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 2, type: Predictions}
       Xgboost train 3:
-        componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
+        componentRef: {digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
@@ -123,7 +121,7 @@ implementation:
           objective:
             graphInput: {inputName: objective}
       Xgboost predict 3:
-        componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
+        componentRef: {digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
@@ -133,29 +131,29 @@ implementation:
           label_column:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format 3:
-        componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: test_3, taskId: Split table into folds, type: CSV}
           transform_code: df = df[["tips"]]
       Remove header 3:
-        componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format 3, type: CSV}
       Calculate regression metrics from csv 3:
-        componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
+        componentRef: {digest: 944def5d4b82aaeee38ac5c171f5e4007d639cfa00e065443dba684a38f7cf7e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 3}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 3, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 3, type: Predictions}
       Xgboost train 4:
-        componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
+        componentRef: {digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
@@ -167,7 +165,7 @@ implementation:
           objective:
             graphInput: {inputName: objective}
       Xgboost predict 4:
-        componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
+        componentRef: {digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
@@ -177,29 +175,29 @@ implementation:
           label_column:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format 4:
-        componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: test_4, taskId: Split table into folds, type: CSV}
           transform_code: df = df[["tips"]]
       Remove header 4:
-        componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format 4, type: CSV}
       Calculate regression metrics from csv 4:
-        componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
+        componentRef: {digest: 944def5d4b82aaeee38ac5c171f5e4007d639cfa00e065443dba684a38f7cf7e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 4}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 4, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 4, type: Predictions}
       Xgboost train 5:
-        componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
+        componentRef: {digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
@@ -211,7 +209,7 @@ implementation:
           objective:
             graphInput: {inputName: objective}
       Xgboost predict 5:
-        componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
+        componentRef: {digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
@@ -221,29 +219,29 @@ implementation:
           label_column:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format 5:
-        componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: test_5, taskId: Split table into folds, type: CSV}
           transform_code: df = df[["tips"]]
       Remove header 5:
-        componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format 5, type: CSV}
       Calculate regression metrics from csv 5:
-        componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
+        componentRef: {digest: 944def5d4b82aaeee38ac5c171f5e4007d639cfa00e065443dba684a38f7cf7e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header 5}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict 5, type: Text}
-      Aggregate regression metrics from csv:
-        componentRef: {digest: 3e128130521eff8d43764f3dcb037316cdd6490ad2878df5adef416f7c2f3c19,
+            taskOutput: {outputName: predictions, taskId: Xgboost predict 5, type: Predictions}
+      Aggregate regression metrics:
+        componentRef: {digest: 1291e9c03fab7205acb9bb6b7b41920eed3b07ff3270f1dd57173e421d21f12e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Aggregate_regression_metrics/component.yaml'}
         arguments:
           metrics_1:
@@ -264,13 +262,12 @@ implementation:
     outputValues:
       mean_absolute_error:
         taskOutput: {outputName: mean_absolute_error, taskId: Aggregate regression
-            metrics from csv, type: Float}
+            metrics, type: Float}
       mean_squared_error:
         taskOutput: {outputName: mean_squared_error, taskId: Aggregate regression
-            metrics from csv, type: Float}
+            metrics, type: Float}
       root_mean_squared_error:
         taskOutput: {outputName: root_mean_squared_error, taskId: Aggregate regression
-            metrics from csv, type: Float}
+            metrics, type: Float}
       metrics:
-        taskOutput: {outputName: metrics, taskId: Aggregate regression metrics from
-            csv, type: JsonObject}
+        taskOutput: {outputName: metrics, taskId: Aggregate regression metrics, type: JsonObject}

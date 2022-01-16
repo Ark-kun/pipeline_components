@@ -1,4 +1,6 @@
 name: Xgboost train regression and calculate metrics on csv
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Train_regression_and_calculate_metrics/from_CSV/component.yaml'}
 inputs:
 - {name: training_data, type: CSV}
 - {name: testing_data, type: CSV}
@@ -11,15 +13,11 @@ outputs:
 - {name: mean_squared_error, type: Float}
 - {name: root_mean_squared_error, type: Float}
 - {name: metrics, type: JsonObject}
-metadata:
-  annotations:
-    author: Alexey Volkov <alexey.volkov@ark-kun.com>
-    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Train_regression_and_calculate_metrics/from_CSV/component.yaml'
 implementation:
   graph:
     tasks:
       Xgboost train:
-        componentRef: {digest: 09b80053da29f8f51575b42e5d2e8ad4b7bdcc92a02c3744e189b1f597006b38,
+        componentRef: {digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml'}
         arguments:
           training_data:
@@ -31,7 +29,7 @@ implementation:
           objective:
             graphInput: {inputName: objective}
       Xgboost predict:
-        componentRef: {digest: ecdfaf32cff15b6abc3d0dd80365ce00577f1a19a058fbe201f515431cea1357,
+        componentRef: {digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml'}
         arguments:
           data:
@@ -41,27 +39,27 @@ implementation:
           label_column:
             graphInput: {inputName: label_column}
       Pandas Transform DataFrame in CSV format:
-        componentRef: {digest: 58dc88349157bf128021708c316ce4eb60bc1de0a5a7dd3af45fabac3276d510,
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
         arguments:
           table:
             graphInput: {inputName: testing_data}
           transform_code: df = df[["tips"]]
       Remove header:
-        componentRef: {digest: ba35ffea863855b956c3c50aefa0420ba3823949a6c059e6e3971cde960dc5a3,
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
                 in CSV format, type: CSV}
       Calculate regression metrics from csv:
-        componentRef: {digest: e3ecbfeb18032820edfee4255e2fb6d15d15ed224e166519d5e528e12053a995,
+        componentRef: {digest: 944def5d4b82aaeee38ac5c171f5e4007d639cfa00e065443dba684a38f7cf7e,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
         arguments:
           true_values:
             taskOutput: {outputName: table, taskId: Remove header}
           predicted_values:
-            taskOutput: {outputName: predictions, taskId: Xgboost predict, type: Text}
+            taskOutput: {outputName: predictions, taskId: Xgboost predict, type: Predictions}
     outputValues:
       model:
         taskOutput: {outputName: model, taskId: Xgboost train, type: XGBoostModel}
