@@ -1,0 +1,93 @@
+name: Create Vowpal Wabbit dataset from CSV
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Vowpal_Wabbit/Create_dataset/from_CSV/component.yaml'}
+inputs:
+- {name: dataset, type: CSV}
+- {name: label_column_name, type: String, optional: true}
+- {name: label_type, type: String, default: simple_label, optional: true}
+outputs:
+- {name: converted_dataset, type: VowpalWabbitDataset}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'vowpalwabbit==9.0.1' 'pandas==1.4.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'vowpalwabbit==9.0.1' 'pandas==1.4.1'
+      --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def _make_parent_dirs_and_return_path(file_path: str):
+          import os
+          os.makedirs(os.path.dirname(file_path), exist_ok=True)
+          return file_path
+
+      def create_Vowpal_Wabbit_dataset_from_CSV(
+          dataset_path,
+          converted_dataset_path,
+          label_column_name = None,
+          label_type = "simple_label",
+      ):
+          import pandas
+          from vowpalwabbit import dftovw
+
+          df = pandas.read_csv(dataset_path)
+          # Hidden feature: Can pass multiple column names as comma-separated string.
+          if label_column_name:
+              label_columns = label_column_name.split(",")
+              label_column_set = set(label_columns)
+          else:
+              label_column_set = set()
+          label_column_list = sorted(list(label_column_set))
+          feature_column_set = set(df.columns)
+          feature_column_list = sorted(list(feature_column_set - label_column_set))
+          # TODO: Simplify when https://github.com/VowpalWabbit/vowpal_wabbit/pull/3729 is merged and released.
+          if label_column_name:
+              converter = dftovw.DFtoVW.from_colnames(
+                  df=df, y=label_column_list, x=feature_column_list, label_type=label_type,
+              )
+          else:
+              converter = dftovw.DFtoVW(
+                  df=df,
+                  features=[
+                      dftovw.Feature(value=feature_name)
+                      for feature_name in feature_column_list
+                  ],
+              )
+
+          converted_lines = converter.convert_df()
+          with open(converted_dataset_path, "w") as f:
+              for line in converted_lines:
+                  f.write(line + "\n")
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Create Vowpal Wabbit dataset from CSV', description='')
+      _parser.add_argument("--dataset", dest="dataset_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--label-type", dest="label_type", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--converted-dataset", dest="converted_dataset_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+      _parsed_args = vars(_parser.parse_args())
+
+      _outputs = create_Vowpal_Wabbit_dataset_from_CSV(**_parsed_args)
+    args:
+    - --dataset
+    - {inputPath: dataset}
+    - if:
+        cond: {isPresent: label_column_name}
+        then:
+        - --label-column-name
+        - {inputValue: label_column_name}
+    - if:
+        cond: {isPresent: label_type}
+        then:
+        - --label-type
+        - {inputValue: label_type}
+    - --converted-dataset
+    - {outputPath: converted_dataset}

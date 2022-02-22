@@ -1,0 +1,30 @@
+name: Predict using Vowpal Wabbit model on VowpalWabbitDataset
+metadata:
+  annotations:
+    author: "Alexey Volkov <alexey.volkov@ark-kun.com>"
+    canonical_location: "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Vowpal_Wabbit/Predict/from_VowpalWabbitDataset/component.yaml"
+inputs:
+- {name: Dataset, type: VowpalWabbitDataset}
+- {name: Model, type: VowpalWabbitRegressorModel}
+outputs:
+- {name: Predictions}
+implementation:
+  container:
+    image: vowpalwabbit/vw-rel-alpine:9.0.1
+    # See https://github.com/VowpalWabbit/vowpal_wabbit/wiki/Command-line-arguments
+    command:
+      - sh
+      - -exc
+      - |
+        # Creating directories for the outputs
+        mkdir -p "$(dirname "$6")" # Predictions
+        "$0" "$@"
+      - ./vw
+      - --data
+      - {inputPath: Dataset}
+      - --initial_regressor
+      - {inputPath: Model}
+      - --predictions
+      - {outputPath: Predictions}
+      # Ignore label information and just test
+      - --testonly

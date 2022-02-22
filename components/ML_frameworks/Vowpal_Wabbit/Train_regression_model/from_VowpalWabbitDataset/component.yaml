@@ -1,0 +1,41 @@
+name: Train regression model using Vowpal Wabbit on VowpalWabbitDataset
+metadata:
+  annotations:
+    author: "Alexey Volkov <alexey.volkov@ark-kun.com>"
+    canonical_location: "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Vowpal_Wabbit/Train_regression_model/from_VowpalWabbitDataset/component.yaml"
+inputs:
+- {name: Dataset, type: VowpalWabbitDataset}
+- {name: Initial model, type: VowpalWabbitRegressorModel, optional: true}
+- {name: Number of passes, type: Integer, default: "1"}
+- {name: Loss function, type: String, default: "squared", description: "Supported values: squared, hinge, logistic, quantile, poisson. See https://github.com/VowpalWabbit/vowpal_wabbit/wiki/Loss-functions"}
+outputs:
+- {name: Model, type: VowpalWabbitRegressorModel}
+- {name: Readable model, type: VowpalWabbitReadableHashRegressorModel}
+implementation:
+  container:
+    image: vowpalwabbit/vw-rel-alpine:9.0.1
+    # See https://github.com/VowpalWabbit/vowpal_wabbit/wiki/Command-line-arguments
+    command:
+      - sh
+      - -exc
+      - |
+        # Creating directories for the outputs
+        mkdir -p "$(dirname "$4")" # Model
+        mkdir -p "$(dirname "$6")" # Readable model
+        "$0" "$@"
+      - ./vw
+      - --data
+      - {inputPath: Dataset}
+      - --final_regressor
+      - {outputPath: Model}
+      - --invert_hash
+      - {outputPath: Readable model}
+      - --passes
+      - {inputValue: Number of passes}
+      - --loss_function
+      - {inputValue: Loss function}
+      - if:
+          cond: {isPresent: Initial model}
+          then:
+            - --initial_regressor
+            - {inputPath: Initial model}
