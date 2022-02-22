@@ -1,0 +1,132 @@
+name: Vowpal wabbit pipeline
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Vowpal_Wabbit/_samples/pipeline.component.yaml'}
+implementation:
+  graph:
+    tasks:
+      Chicago Taxi Trips dataset:
+        componentRef: {digest: 8721222dae1dc6870bc346a8fc39614aa4e3e0c5bc2bf688eb7b60ddcdcc662c,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/8dda6ec74d859a0112907fab8bc987a177b9fa4b/components/datasets/Chicago_Taxi_Trips/component.yaml'}
+        arguments: {Select: 'tips,trip_seconds,trip_miles,pickup_community_area,dropoff_community_area,fare,tolls,extras,trip_total'}
+      Create Vowpal Wabbit dataset from CSV:
+        componentRef: {digest: 0c3c12c74c25b5a2437f0c5ff53a15bfd8eae8dd721bdf1c44cd98f2d51ed053,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Create_dataset/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
+          label_column_name: tips
+      Create Vowpal Wabbit dataset from CSV 2:
+        componentRef: {digest: 0c3c12c74c25b5a2437f0c5ff53a15bfd8eae8dd721bdf1c44cd98f2d51ed053,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Create_dataset/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
+      Train regression model using Vowpal Wabbit on VowpalWabbitDataset:
+        componentRef: {digest: 0fc609901064e9c6c3b0d9f86bb3f6b18b87584eaa0c31d49441bc3eda6c9215,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Train_regression_model/from_VowpalWabbitDataset/component.yaml'}
+        arguments:
+          Dataset:
+            taskOutput: {outputName: converted_dataset, taskId: Create Vowpal Wabbit
+                dataset from CSV, type: VowpalWabbitDataset}
+      Train regression model using Vowpal Wabbit on VowpalWabbitDataset 2:
+        componentRef: {digest: 0fc609901064e9c6c3b0d9f86bb3f6b18b87584eaa0c31d49441bc3eda6c9215,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Train_regression_model/from_VowpalWabbitDataset/component.yaml'}
+        arguments:
+          Dataset:
+            taskOutput: {outputName: converted_dataset, taskId: Create Vowpal Wabbit
+                dataset from CSV, type: VowpalWabbitDataset}
+          Initial model:
+            taskOutput: {outputName: Model, taskId: Train regression model using Vowpal
+                Wabbit on VowpalWabbitDataset, type: VowpalWabbitRegressorModel}
+      Predict using Vowpal Wabbit model on VowpalWabbitDataset:
+        componentRef: {digest: 5701c5a36e8b9ba0c87badead6d5a461bc21e0943df0e5c34221acec0ed5dbb8,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Predict/from_VowpalWabbitDataset/component.yaml'}
+        arguments:
+          Dataset:
+            taskOutput: {outputName: converted_dataset, taskId: Create Vowpal Wabbit
+                dataset from CSV, type: VowpalWabbitDataset}
+          Model:
+            taskOutput: {outputName: Model, taskId: Train regression model using Vowpal
+                Wabbit on VowpalWabbitDataset, type: VowpalWabbitRegressorModel}
+      Predict using Vowpal Wabbit model on VowpalWabbitDataset 2:
+        componentRef: {digest: 5701c5a36e8b9ba0c87badead6d5a461bc21e0943df0e5c34221acec0ed5dbb8,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Predict/from_VowpalWabbitDataset/component.yaml'}
+        arguments:
+          Dataset:
+            taskOutput: {outputName: converted_dataset, taskId: Create Vowpal Wabbit
+                dataset from CSV, type: VowpalWabbitDataset}
+          Model:
+            taskOutput: {outputName: Model, taskId: Train regression model using Vowpal
+                Wabbit on VowpalWabbitDataset 2, type: VowpalWabbitRegressorModel}
+      Pandas Transform DataFrame in CSV format:
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
+        arguments:
+          table:
+            taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
+          transform_code: df = df[["tips"]]
+      Remove header:
+        componentRef: {digest: 5e8bc75d0817daeaa25e15ae866a7483946fcfac7ce1d5f998a2c77d6fa1836b,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml'}
+        arguments:
+          table:
+            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
+                in CSV format, type: CSV}
+      Calculate regression metrics from csv:
+        componentRef: {digest: fe2777bc727d843d24f1b282317b187e020b3999b4d2e5cdb0e28b51843ffe08,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/37d98d43ad3193cf3516c134899f272d9643117c/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
+        arguments:
+          true_values:
+            taskOutput: {outputName: table, taskId: Remove header}
+          predicted_values:
+            taskOutput: {outputName: Predictions, taskId: Predict using Vowpal Wabbit
+                model on VowpalWabbitDataset}
+      Calculate regression metrics from csv 2:
+        componentRef: {digest: fe2777bc727d843d24f1b282317b187e020b3999b4d2e5cdb0e28b51843ffe08,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/37d98d43ad3193cf3516c134899f272d9643117c/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
+        arguments:
+          true_values:
+            taskOutput: {outputName: table, taskId: Remove header}
+          predicted_values:
+            taskOutput: {outputName: Predictions, taskId: Predict using Vowpal Wabbit
+                model on VowpalWabbitDataset 2}
+      Create Vowpal Wabbit JSON dataset from CSV:
+        componentRef: {digest: 7106835d2aa1fa305a47d5504e519a4af9939097b49a74d3d88829dce1231c11,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Create_JSON_dataset/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
+          label_column_name: tips
+      Create Vowpal Wabbit JSON dataset from CSV 2:
+        componentRef: {digest: 7106835d2aa1fa305a47d5504e519a4af9939097b49a74d3d88829dce1231c11,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Create_JSON_dataset/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
+      Train regression model using Vowpal Wabbit on VowpalWabbitDataset 3:
+        componentRef: {digest: 601b68212b611b2b798767f4fcf3e77de662688b772daaae0ad3eb55426f56bc,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Train_regression_model/from_VowpalWabbitJsonDataset/component.yaml'}
+        arguments:
+          Dataset:
+            taskOutput: {outputName: converted_dataset, taskId: Create Vowpal Wabbit
+                JSON dataset from CSV, type: VowpalWabbitJsonDataset}
+      Predict using Vowpal Wabbit model on VowpalWabbitJsonDataset:
+        componentRef: {digest: f3eecb52c5f4d31d89090d17217e05f881600f8c7a18fc8de11eea1bf9d5fdf8,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/a2a629e776d5fa0204ce71370cab23282d3e4278/components/ML_frameworks/Vowpal_Wabbit/Predict/from_VowpalWabbitJsonDataset/component.yaml'}
+        arguments:
+          Dataset:
+            taskOutput: {outputName: converted_dataset, taskId: Create Vowpal Wabbit
+                JSON dataset from CSV, type: VowpalWabbitJsonDataset}
+          Model:
+            taskOutput: {outputName: Model, taskId: Train regression model using Vowpal
+                Wabbit on VowpalWabbitDataset 3, type: VowpalWabbitRegressorModel}
+      Calculate regression metrics from csv 3:
+        componentRef: {digest: fe2777bc727d843d24f1b282317b187e020b3999b4d2e5cdb0e28b51843ffe08,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/37d98d43ad3193cf3516c134899f272d9643117c/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml'}
+        arguments:
+          true_values:
+            taskOutput: {outputName: table, taskId: Remove header}
+          predicted_values:
+            taskOutput: {outputName: Predictions, taskId: Predict using Vowpal Wabbit
+                model on VowpalWabbitJsonDataset}
+    outputValues: {}
