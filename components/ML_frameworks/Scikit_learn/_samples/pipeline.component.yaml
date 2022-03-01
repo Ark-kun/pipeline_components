@@ -1,0 +1,46 @@
+name: Scikit learn linear pipeline
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Scikit_learn/_samples/pipeline.component.yaml'}
+implementation:
+  graph:
+    tasks:
+      Chicago Taxi Trips dataset:
+        componentRef: {digest: 8721222dae1dc6870bc346a8fc39614aa4e3e0c5bc2bf688eb7b60ddcdcc662c,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/8dda6ec74d859a0112907fab8bc987a177b9fa4b/components/datasets/Chicago_Taxi_Trips/component.yaml'}
+        arguments: {Where: trip_start_timestamp>="1900-01-01" AND trip_start_timestamp<"2100-01-01",
+          Limit: '1000', Select: 'tips,trip_seconds,trip_miles,pickup_community_area,dropoff_community_area,fare,tolls,extras,trip_total',
+          Format: csv}
+      Pandas Transform DataFrame in CSV format:
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
+        arguments:
+          table:
+            taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
+          transform_code: df = df.fillna(0)
+      Train linear regression model using scikit learn from CSV:
+        componentRef: {digest: c7fe7912ab0d1fb45d201d452e9ce6be5544e7d8c6d229db7a4b931ff58560f3,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/f807e02b54d4886c65a05f40848fd51c72407f40/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
+                in CSV format, type: CSV}
+          label_column_name: tips
+      Pandas Transform DataFrame in CSV format 2:
+        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
+        arguments:
+          table:
+            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
+                in CSV format, type: CSV}
+          transform_code: 'df = pandas.concat([df.drop(columns=["tips"]), (df["tips"]
+            > 0).replace({False: 0, True: 1}).rename("any_tips")], axis=1)'
+      Train logistic regression model using scikit learn from CSV:
+        componentRef: {digest: a864625a822e4b1c8ef6fe4ae1454fd90f15438f70a6712bb4c30e0dda4d35b7,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/cb44b75c9c062fcc40c2b905b2024b4493dbc62b/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
+                in CSV format 2, type: CSV}
+          label_column_name: any_tips
+          max_iterations: '1000'
+    outputValues: {}
