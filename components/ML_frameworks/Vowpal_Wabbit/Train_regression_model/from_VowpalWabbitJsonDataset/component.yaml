@@ -1,4 +1,4 @@
-name: Train regression model using Vowpal Wabbit on VowpalWabbitDataset
+name: Train regression model using Vowpal Wabbit on VowpalWabbitJsonDataset
 metadata:
   annotations:
     author: "Alexey Volkov <alexey.volkov@ark-kun.com>"
