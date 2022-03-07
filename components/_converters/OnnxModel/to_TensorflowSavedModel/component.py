@@ -1,9 +1,9 @@
 from kfp.components import create_component_from_func, InputPath, OutputPath
 
 
-def convert_to_tensorflow_saved_model_from_onnx_model(
-    model_path: InputPath('OnnxModel'),
-    converted_model_path: OutputPath('TensorflowSavedModel'),
+def convert_to_TensorflowSavedModel_from_OnnxModel(
+    model_path: InputPath("OnnxModel"),
+    converted_model_path: OutputPath("TensorflowSavedModel"),
 ):
     import onnx
     import onnx_tf
@@ -14,9 +14,9 @@ def convert_to_tensorflow_saved_model_from_onnx_model(
 
 
 if __name__ == '__main__':
-    convert_to_tensorflow_saved_model_from_onnx_model_op = create_component_from_func(
-        convert_to_tensorflow_saved_model_from_onnx_model,
-        output_component_file='component.yaml',
+    convert_to_TensorflowSavedModel_from_OnnxModel_op = create_component_from_func(
+        convert_to_TensorflowSavedModel_from_OnnxModel,
+        output_component_file="component.yaml",
         base_image="tensorflow/tensorflow:2.8.0",
         packages_to_install=["onnx-tf==1.9.0", "onnx==1.11.0"],
         annotations={

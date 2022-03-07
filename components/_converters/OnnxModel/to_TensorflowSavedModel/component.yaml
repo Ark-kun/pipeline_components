@@ -1,4 +1,4 @@
-name: Convert to tensorflow saved model from onnx model
+name: Convert to TensorflowSavedModel from OnnxModel
 metadata:
   annotations:
     author: Alexey Volkov <alexey.volkov@ark-kun.com>
@@ -29,7 +29,7 @@ implementation:
           os.makedirs(os.path.dirname(file_path), exist_ok=True)
           return file_path
 
-      def convert_to_tensorflow_saved_model_from_onnx_model(
+      def convert_to_TensorflowSavedModel_from_OnnxModel(
           model_path,
           converted_model_path,
       ):
@@ -41,12 +41,12 @@ implementation:
           tf_rep.export_graph(converted_model_path)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Convert to tensorflow saved model from onnx model', description='')
+      _parser = argparse.ArgumentParser(prog='Convert to TensorflowSavedModel from OnnxModel', description='')
       _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--converted-model", dest="converted_model_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parsed_args = vars(_parser.parse_args())
 
-      _outputs = convert_to_tensorflow_saved_model_from_onnx_model(**_parsed_args)
+      _outputs = convert_to_TensorflowSavedModel_from_OnnxModel(**_parsed_args)
     args:
     - --model
     - {inputPath: model}
