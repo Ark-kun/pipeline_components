@@ -17,8 +17,8 @@ if __name__ == '__main__':
     convert_to_tensorflow_saved_model_from_onnx_model_op = create_component_from_func(
         convert_to_tensorflow_saved_model_from_onnx_model,
         output_component_file='component.yaml',
-        base_image='tensorflow/tensorflow:2.4.1',
-        packages_to_install=['onnx-tf==1.7.0', 'onnx==1.8.0'],  # onnx-tf==1.7.0 is not compatible with onnx==1.8.1
+        base_image="tensorflow/tensorflow:2.8.0",
+        packages_to_install=["onnx-tf==1.9.0", "onnx==1.11.0"],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
             "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/_converters/OnnxModel/to_TensorflowSavedModel/component.yaml",

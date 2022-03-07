@@ -9,13 +9,13 @@ outputs:
 - {name: converted_model, type: TensorflowSavedModel}
 implementation:
   container:
-    image: tensorflow/tensorflow:2.4.1
+    image: tensorflow/tensorflow:2.8.0
     command:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'onnx-tf==1.7.0' 'onnx==1.8.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
-      pip install --quiet --no-warn-script-location 'onnx-tf==1.7.0' 'onnx==1.8.0'
+      'onnx-tf==1.9.0' 'onnx==1.11.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+      pip install --quiet --no-warn-script-location 'onnx-tf==1.9.0' 'onnx==1.11.0'
       --user) && "$0" "$@"
     - sh
     - -ec
