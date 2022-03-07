@@ -6,7 +6,7 @@ metadata:
 inputs:
 - {name: model, type: OnnxModel}
 outputs:
-- {name: converted_model, type: TensorflowModel}
+- {name: converted_model, type: TensorflowSavedModel}
 implementation:
   container:
     image: tensorflow/tensorflow:2.4.1
