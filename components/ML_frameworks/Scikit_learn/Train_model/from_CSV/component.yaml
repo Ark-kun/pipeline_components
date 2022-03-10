@@ -1,0 +1,129 @@
+name: Train model using scikit learn from CSV
+description: Train any Scikit-learn model
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml'}
+inputs:
+- {name: dataset, type: CSV}
+- {name: label_column_name, type: String}
+- {name: model_class_name, type: String, description: 'Full model class name. Example:
+    `sklearn.linear_model.LogisticRegression`'}
+- {name: model_parameters, type: JsonObject, description: A dictionary of model class
+    parameter values., default: '{}', optional: true}
+- {name: random_seed, type: Integer, description: Controls the seed of the random
+    processes., default: '0', optional: true}
+outputs:
+- {name: model, type: ScikitLearnPickleModel}
+- {name: model_dict, type: JsonObject}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'scikit-learn==1.0.2' 'pandas==1.4.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'scikit-learn==1.0.2' 'pandas==1.4.1'
+      --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def _make_parent_dirs_and_return_path(file_path: str):
+          import os
+          os.makedirs(os.path.dirname(file_path), exist_ok=True)
+          return file_path
+
+      def train_model_using_scikit_learn_from_CSV(
+          dataset_path,
+          model_path,
+          model_dict_path,
+          label_column_name,
+          model_class_name,
+          model_parameters = {},
+          random_seed = 0,
+      ):
+          """Train any Scikit-learn model
+
+          Args:
+              model_class_name: Full model class name. Example: `sklearn.linear_model.LogisticRegression`
+              model_parameters: A dictionary of model class parameter values.
+              random_seed: Controls the seed of the random processes.
+          """
+          import importlib
+          import json
+          import numpy
+          import pandas
+          import pickle
+          import traceback
+
+          model_class_module_name, model_class_class_name = model_class_name.rsplit(".", 1)
+
+          model_module = importlib.import_module(model_class_module_name)
+          model_class = getattr(model_module, model_class_class_name)
+
+          numpy.random.seed(random_seed)
+          model = model_class(**model_parameters)
+          df = pandas.read_csv(dataset_path)
+          model.fit(
+              X=df.drop(columns=label_column_name),
+              y=df[label_column_name],
+          )
+          with open(model_path, "wb") as f:
+              pickle.dump(model, f)
+
+          def default_serializer(x):
+              type_name = type(x).__name__
+              if type_name == "ndarray":
+                  return x.tolist()
+              raise TypeError(
+                  f"TypeError: Object of type {type_name} is not JSON serializable"
+              )
+
+          # Including the model class name in the model dict
+          model_dict = {"__class__": model_class_name}
+          model_dict.update(model.__dict__)
+          with open(model_dict_path, "w") as f:
+              try:
+                  json.dump(
+                      obj=model_dict, fp=f, indent=2, default=default_serializer,
+                  )
+              except:
+                  traceback.print_exc()
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Train model using scikit learn from CSV', description='Train any Scikit-learn model')
+      _parser.add_argument("--dataset", dest="dataset_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--model-class-name", dest="model_class_name", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--model-parameters", dest="model_parameters", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--random-seed", dest="random_seed", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--model", dest="model_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--model-dict", dest="model_dict_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+      _parsed_args = vars(_parser.parse_args())
+
+      _outputs = train_model_using_scikit_learn_from_CSV(**_parsed_args)
+    args:
+    - --dataset
+    - {inputPath: dataset}
+    - --label-column-name
+    - {inputValue: label_column_name}
+    - --model-class-name
+    - {inputValue: model_class_name}
+    - if:
+        cond: {isPresent: model_parameters}
+        then:
+        - --model-parameters
+        - {inputValue: model_parameters}
+    - if:
+        cond: {isPresent: random_seed}
+        then:
+        - --random-seed
+        - {inputValue: random_seed}
+    - --model
+    - {outputPath: model}
+    - --model-dict
+    - {outputPath: model_dict}
