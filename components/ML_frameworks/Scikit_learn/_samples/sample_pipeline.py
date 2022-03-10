@@ -7,6 +7,7 @@ calculate_regression_metrics_from_csv_op = components.load_component_from_url("h
 
 train_linear_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/f807e02b54d4886c65a05f40848fd51c72407f40/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml")
 train_logistic_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/cb44b75c9c062fcc40c2b905b2024b4493dbc62b/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml")
+train_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/46e8248ab69c6b7910b1eae05268493e4ec8ca90/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml")
 
 
 def scikit_learn_linear_pipeline():
@@ -39,6 +40,21 @@ def scikit_learn_linear_pipeline():
         label_column_name="any_tips",
         # Optional:
         max_iterations=1000,
+    ).outputs["model"]
+
+    # Generic Scikit-learn model trainer
+    linear_regression_model2 = train_model_using_scikit_learn_from_CSV_op(
+        dataset=training_data_csv,
+        label_column_name="tips",
+        model_class_name="sklearn.linear_model.LinearRegression",
+    ).outputs["model"]
+
+    logistic_regression_model2 = train_model_using_scikit_learn_from_CSV_op(
+        dataset=binary_classification_training_data_csv,
+        label_column_name="any_tips",
+        model_class_name="sklearn.linear_model.LogisticRegression",
+        # Optional:
+        model_parameters={"max_iter": 1000, "verbose": 1},
     ).outputs["model"]
 
 

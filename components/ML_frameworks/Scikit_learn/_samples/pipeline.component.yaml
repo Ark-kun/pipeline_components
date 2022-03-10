@@ -43,4 +43,23 @@ implementation:
                 in CSV format 2, type: CSV}
           label_column_name: any_tips
           max_iterations: '1000'
+      Train model using scikit learn from CSV:
+        componentRef: {digest: 17fa1d67d7e07707c177f7803d897e5b701cbc333d4279e474f2b3f8e26c8075,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/46e8248ab69c6b7910b1eae05268493e4ec8ca90/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
+                in CSV format, type: CSV}
+          label_column_name: tips
+          model_class_name: sklearn.linear_model.LinearRegression
+      Train model using scikit learn from CSV 2:
+        componentRef: {digest: 17fa1d67d7e07707c177f7803d897e5b701cbc333d4279e474f2b3f8e26c8075,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/46e8248ab69c6b7910b1eae05268493e4ec8ca90/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml'}
+        arguments:
+          dataset:
+            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
+                in CSV format 2, type: CSV}
+          label_column_name: any_tips
+          model_class_name: sklearn.linear_model.LogisticRegression
+          model_parameters: '{"max_iter": 1000, "verbose": 1}'
     outputValues: {}
