@@ -1,0 +1,35 @@
+name: Download data from IPFS
+description: |
+  Download data from IPFS using ipget.
+  See https://ipfs.io/
+  See https://github.com/ipfs/ipget
+inputs:
+- {name: Path, type: String, description: "IPFS Path. Example: /ipfs/QmWATWQ7fVPP2EFGu71UkfnqhYXDYH566qy47CnJDgvs8u"}
+outputs:
+- {name: Data}
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/Download_and_upload/IPFS/Download/component.yaml"
+implementation:
+  container:
+    image: alpine
+    command:
+    - sh
+    - -exc
+    - |
+      path=$0
+      output_data_path=$1
+      mkdir -p "$(dirname "$output_data_path")"
+
+      wget https://dist.ipfs.io/ipget/v0.7.0/ipget_v0.7.0_linux-amd64.tar.gz
+      tar -xzf ipget_v0.7.0_linux-amd64.tar.gz
+      cd ipget
+
+      # Fixing IPFS on Alpine issue:
+      # https://discuss.ipfs.io/t/why-go-ipfs-cant-run-in-alphine-linux/6625
+      mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+
+      ./ipget --output "$output_data_path" "$path"
+    - {inputValue: Path}
+    - {outputPath: Data}
