@@ -1,7 +1,8 @@
 from kfp import components
 
 chicago_taxi_dataset_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/8dda6ec74d859a0112907fab8bc987a177b9fa4b/components/datasets/Chicago_Taxi_Trips/component.yaml")
-pandas_transform_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml")
+fill_all_missing_values_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/151411a5b719916b47505cd21c4541c1a5b62400/components/pandas/Fill_all_missing_values/in_CSV_format/component.yaml")
+binarize_column_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml")
 drop_header_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml")
 calculate_regression_metrics_from_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/37d98d43ad3193cf3516c134899f272d9643117c/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml")
 
@@ -17,9 +18,9 @@ def scikit_learn_linear_pipeline():
 
     # Cleaning the NaN values.
     # Preventing ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
-    training_data_csv = pandas_transform_csv_op(
+    training_data_csv = fill_all_missing_values_using_Pandas_on_CSV_data_op(
         table=raw_training_data_csv,
-        transform_code='''df = df.fillna(0)''',
+        replacement_value="0",
     ).output
 
     ## Linear regression
@@ -29,15 +30,17 @@ def scikit_learn_linear_pipeline():
     ).outputs["model"]
 
     ## Logistic regression
-    # Replacing the float "tips" column with binary classification "any_tips" column
-    binary_classification_training_data_csv = pandas_transform_csv_op(
+    # Replacing the float "tips" column with binary classification "was_tipped" column
+    binary_classification_training_data_csv = binarize_column_using_Pandas_on_CSV_data_op(
         table=training_data_csv,
-        transform_code='''df = pandas.concat([df.drop(columns=["tips"]), (df["tips"] > 0).replace({False: 0, True: 1}).rename("any_tips")], axis=1)''',
+        column_name="tips",
+        predicate="> 0",
+        new_column_name="was_tipped",
     ).output
 
     logistic_regression_model = train_logistic_regression_model_using_scikit_learn_from_CSV_op(
         dataset=binary_classification_training_data_csv,
-        label_column_name="any_tips",
+        label_column_name="was_tipped",
         # Optional:
         max_iterations=1000,
     ).outputs["model"]
@@ -51,7 +54,7 @@ def scikit_learn_linear_pipeline():
 
     logistic_regression_model2 = train_model_using_scikit_learn_from_CSV_op(
         dataset=binary_classification_training_data_csv,
-        label_column_name="any_tips",
+        label_column_name="was_tipped",
         model_class_name="sklearn.linear_model.LogisticRegression",
         # Optional:
         model_parameters={"max_iter": 1000, "verbose": 1},

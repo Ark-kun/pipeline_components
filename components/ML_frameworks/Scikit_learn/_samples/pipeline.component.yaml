@@ -10,46 +10,47 @@ implementation:
         arguments: {Where: trip_start_timestamp>="1900-01-01" AND trip_start_timestamp<"2100-01-01",
           Limit: '1000', Select: 'tips,trip_seconds,trip_miles,pickup_community_area,dropoff_community_area,fare,tolls,extras,trip_total',
           Format: csv}
-      Pandas Transform DataFrame in CSV format:
-        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
-          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
+      Fill all missing values using Pandas on CSV data:
+        componentRef: {digest: c78f49267f7bf4362e737c34251d3e2b1dda295d16891676885fe51ca67fbcc6,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/151411a5b719916b47505cd21c4541c1a5b62400/components/pandas/Fill_all_missing_values/in_CSV_format/component.yaml'}
         arguments:
           table:
             taskOutput: {outputName: Table, taskId: Chicago Taxi Trips dataset}
-          transform_code: df = df.fillna(0)
+          replacement_value: '0'
       Train linear regression model using scikit learn from CSV:
         componentRef: {digest: c7fe7912ab0d1fb45d201d452e9ce6be5544e7d8c6d229db7a4b931ff58560f3,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/f807e02b54d4886c65a05f40848fd51c72407f40/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml'}
         arguments:
           dataset:
-            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
-                in CSV format, type: CSV}
+            taskOutput: {outputName: transformed_table, taskId: Fill all missing values
+                using Pandas on CSV data, type: CSV}
           label_column_name: tips
-      Pandas Transform DataFrame in CSV format 2:
-        componentRef: {digest: 777017bf588eba84bc1c685198931d3c295036ba492f28bdb0fc5f5bcad5d439,
-          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/pandas/Transform_DataFrame/in_CSV_format/component.yaml'}
+      Binarize column using Pandas on CSV data:
+        componentRef: {digest: 14f3f351dc19a36c9ef03d8399883575e2ec631830e56382ca35c13ae5b84779,
+          url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml'}
         arguments:
           table:
-            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
-                in CSV format, type: CSV}
-          transform_code: 'df = pandas.concat([df.drop(columns=["tips"]), (df["tips"]
-            > 0).replace({False: 0, True: 1}).rename("any_tips")], axis=1)'
+            taskOutput: {outputName: transformed_table, taskId: Fill all missing values
+                using Pandas on CSV data, type: CSV}
+          column_name: tips
+          predicate: '> 0'
+          new_column_name: was_tipped
       Train logistic regression model using scikit learn from CSV:
         componentRef: {digest: a864625a822e4b1c8ef6fe4ae1454fd90f15438f70a6712bb4c30e0dda4d35b7,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/cb44b75c9c062fcc40c2b905b2024b4493dbc62b/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml'}
         arguments:
           dataset:
-            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
-                in CSV format 2, type: CSV}
-          label_column_name: any_tips
+            taskOutput: {outputName: transformed_table, taskId: Binarize column using
+                Pandas on CSV data, type: CSV}
+          label_column_name: was_tipped
           max_iterations: '1000'
       Train model using scikit learn from CSV:
         componentRef: {digest: 17fa1d67d7e07707c177f7803d897e5b701cbc333d4279e474f2b3f8e26c8075,
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/46e8248ab69c6b7910b1eae05268493e4ec8ca90/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml'}
         arguments:
           dataset:
-            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
-                in CSV format, type: CSV}
+            taskOutput: {outputName: transformed_table, taskId: Fill all missing values
+                using Pandas on CSV data, type: CSV}
           label_column_name: tips
           model_class_name: sklearn.linear_model.LinearRegression
       Train model using scikit learn from CSV 2:
@@ -57,9 +58,9 @@ implementation:
           url: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/46e8248ab69c6b7910b1eae05268493e4ec8ca90/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml'}
         arguments:
           dataset:
-            taskOutput: {outputName: transformed_table, taskId: Pandas Transform DataFrame
-                in CSV format 2, type: CSV}
-          label_column_name: any_tips
+            taskOutput: {outputName: transformed_table, taskId: Binarize column using
+                Pandas on CSV data, type: CSV}
+          label_column_name: was_tipped
           model_class_name: sklearn.linear_model.LogisticRegression
           model_parameters: '{"max_iter": 1000, "verbose": 1}'
     outputValues: {}
