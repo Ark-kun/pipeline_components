@@ -1,7 +1,7 @@
 from kfp.components import create_component_from_func, InputPath, OutputPath
 
 
-def convert_to_onnx_from_pytorch_script_module(
+def convert_to_OnnxModel_from_PyTorchScriptModule(
     model_path: InputPath('PyTorchScriptModule'),
     converted_model_path: OutputPath('OnnxModel'),
     list_of_input_shapes: list,
@@ -25,8 +25,8 @@ def convert_to_onnx_from_pytorch_script_module(
 
 
 if __name__ == '__main__':
-    convert_to_onnx_from_pytorch_script_module_op = create_component_from_func(
-        convert_to_onnx_from_pytorch_script_module,
+    convert_to_OnnxModel_from_PyTorchScriptModule_op = create_component_from_func(
+        convert_to_OnnxModel_from_PyTorchScriptModule,
         output_component_file='component.yaml',
         base_image='pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime',
         packages_to_install=[],
