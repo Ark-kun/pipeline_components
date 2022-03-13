@@ -33,6 +33,6 @@ if __name__ == "__main__":
         packages_to_install=[],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
-            "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/tensorflow/Create_fully_connected_network//component.yaml",
+            "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/tensorflow/Create_fully_connected_network/component.yaml",
         },
     )
