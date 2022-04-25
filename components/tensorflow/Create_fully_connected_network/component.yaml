@@ -44,8 +44,13 @@ implementation:
           # The last layer is left without activation
           model.add(tf.keras.layers.Dense(units=layer_sizes[-1]))
 
-          # Note: The tf.saved_model.save method creates the directory automatically
-          tf.saved_model.save(model, model_path)
+          # Using tf.keras.models.save_model instead of tf.saved_model.save to prevent downstream error:
+          #tf.saved_model.save(model, model_path)
+          # ValueError: Unable to create a Keras model from this SavedModel.
+          # This SavedModel was created with `tf.saved_model.save`, and lacks the Keras metadata.
+          # Please save your Keras model by calling `model.save`or `tf.keras.models.save_model`.
+          # See https://github.com/keras-team/keras/issues/16451
+          tf.keras.models.save_model(model, model_path)
 
       import json
       import argparse
