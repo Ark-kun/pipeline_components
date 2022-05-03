@@ -1,0 +1,23 @@
+name: Extract Zip archive
+inputs:
+- {name: Archive, type: ZipArchive}
+outputs:
+- {name: Data, type: Directory}
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/basics/Extract_Zip_archive/component.yaml"
+implementation:
+  container:
+    image: 'joshkeegan/zip@sha256:e3c5e0cd05567f02e9ffd225029a7ecf8b13ccfa41cc5e2686f302f2fe7c5751' #3.15.4
+    command:
+    - sh
+    - -ec
+    - |
+      archive_path="$0"
+      output_data_path="$1"
+      mkdir -p "$output_data_path"
+      cd "$output_data_path"
+      unzip "$archive_path"
+    - {inputPath: Archive}
+    - {outputPath: Data}
