@@ -1,0 +1,50 @@
+name: Create Zip archive
+inputs:
+- {name: Data}
+- {name: Name, type: String, default: ""}
+outputs:
+- {name: Archive, type: ZipArchive}
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/basics/Create_Zip_archive/component.yaml"
+implementation:
+  container:
+    image: 'joshkeegan/zip@sha256:e3c5e0cd05567f02e9ffd225029a7ecf8b13ccfa41cc5e2686f302f2fe7c5751' #3.15.4
+    command:
+    - sh
+    - -exc
+    - |
+      data_path="$0"
+      name="$1"
+      output_archive_path="$2"
+      mkdir -p "$(dirname "$output_archive_path")"
+
+      tmp_archive_path="$(mktemp -u).zip"
+      staging_dir=$(mktemp -d)
+
+      # The "Name" parameter has different meaning for files and directories.
+      # Files must have names. The "Name" parameter sets the file name for the input data blob. The name will be "data" if not specified.
+      # For directories, empty "Name" parameter results in an archive with no directories inside, only the files from the data directory.
+      if [ -d "$data_path" ]; then
+        if [ -z "$name" ]; then
+          cd "$data_path"
+          zip --recurse-paths "$tmp_archive_path" .
+        else
+          cp --recursive "$data_path" "${staging_dir}/${name}"
+          cd "$staging_dir"
+          zip --recurse-paths "$tmp_archive_path" .
+        fi
+      else
+        # The input data is a file
+        name=${name:-'data'}
+        cd "$staging_dir"
+        cp --recursive "$data_path" "$name"
+        zip "$tmp_archive_path" "$name"
+      fi
+
+      unzip -l "$tmp_archive_path"
+      mv "$tmp_archive_path" "$output_archive_path"
+    - {inputPath: Data}
+    - {inputValue: Name}
+    - {outputPath: Archive}
