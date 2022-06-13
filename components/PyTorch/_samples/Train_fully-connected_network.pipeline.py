@@ -9,6 +9,7 @@ create_fully_connected_pytorch_network_op = components.load_component_from_url('
 train_pytorch_model_from_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/PyTorch/Train_PyTorch_model/from_CSV/component.yaml')
 convert_to_onnx_from_pytorch_script_module_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/PyTorch/Convert_to_OnnxModel_from_PyTorchScriptModule/component.yaml')
 create_pytorch_model_archive_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/PyTorch/Create_PyTorch_Model_Archive/component.yaml')
+create_pytorch_model_archive_with_base_handler_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/46d51383e6554b7f3ab4fd8cf614d8c2b422fb22/components/PyTorch/Create_PyTorch_Model_Archive/with_base_handler/component.yaml')
 
 
 def pytorch_pipeline():
@@ -49,10 +50,17 @@ def pytorch_pipeline():
         list_of_input_shapes=[[len(feature_columns)]],
     )
 
+    model_archive = create_pytorch_model_archive_with_base_handler_op(
+        model=trained_model,
+        # Optional:
+        # model_name="model",
+        # model_version="1.0",
+    )
+
     # TODO: Use a real working regression handler here. See https://github.com/pytorch/serve/issues/987
     serving_handler = download_op('https://raw.githubusercontent.com/pytorch/serve/5c03e711a401387a1d42fc01072fcc38b4995b66/ts/torch_handler/base_handler.py').output
 
-    model_archive = create_pytorch_model_archive_op(
+    model_archive2 = create_pytorch_model_archive_op(
         model=trained_model,
         handler=serving_handler,
         # model_name="model",  # Optional
