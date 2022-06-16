@@ -2,7 +2,7 @@ from kfp.components import create_component_from_func, OutputPath
 
 def create_fully_connected_pytorch_network(
     layer_sizes: list,
-    network_path: OutputPath('PyTorchScriptModule'),
+    model_path: OutputPath('PyTorchScriptModule'),
     activation_name: str = 'relu',
     random_seed: int = 0,
 ):
@@ -28,7 +28,7 @@ def create_fully_connected_pytorch_network(
     network = torch.nn.Sequential(*layers)
     script_module = torch.jit.script(network)
     print(script_module)
-    script_module.save(network_path)
+    script_module.save(model_path)
 
 
 if __name__ == '__main__':
