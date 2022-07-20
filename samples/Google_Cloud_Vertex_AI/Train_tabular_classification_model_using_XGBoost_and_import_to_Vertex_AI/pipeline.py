@@ -6,6 +6,7 @@ download_from_gcs_op = components.load_component_from_url("https://raw.githubuse
 select_columns_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml")
 binarize_column_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml")
 xgboost_train_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml")
+xgboost_predict_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml")
 upload_XGBoost_model_to_Google_Cloud_Vertex_AI_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/2c24c0c0730c818b89f676c4dc5c9d6cb90ab01d/components/google-cloud/Vertex_AI/Models/Upload_XGBoost_model/component.yaml")
 
 # %% Pipeline definition
@@ -44,6 +45,14 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
         #min_split_loss=0,
         #max_depth=6,
     ).outputs["model"]
+
+    # Predicting on the training data
+    predictions = xgboost_predict_on_csv_op(
+        data=classification_training_data,
+        model=model,
+        # label_column needs to be set when doing prediction on a dataset that has labels
+        label_column=0,
+    ).outputs["predictions"]
 
     vertex_model_name = upload_XGBoost_model_to_Google_Cloud_Vertex_AI_op(
         model=model,
