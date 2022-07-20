@@ -33,11 +33,11 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
     model = xgboost_train_on_csv_op(
         training_data=classification_training_data,
         label_column=0,
+        objective="binary:logistic",
         # Optional:
         #starting_model=None,
         #num_iterations=10,
         #booster_params={},
-        #objective="reg:squarederror",
         #booster"gbtree",
         #learning_rate=0.3,
         #min_split_loss=0,
