@@ -11,7 +11,7 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
     dataset_gcs_uri = "gs://ml-pipeline-dataset/Chicago_taxi_trips/chicago_taxi_trips_2019-01-01_-_2019-02-01_limit=10000.csv"
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
-    all_columns = feature_columns + [label_column]
+    all_columns = [label_column] + feature_columns
 
     training_data = download_from_gcs_op(
         gcs_path=dataset_gcs_uri
@@ -31,9 +31,9 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
 
     model = xgboost_train_on_csv_op(
         training_data=classification_training_data,
+        label_column=0,
         # Optional:
         #starting_model=None,
-        #label_column=0,
         #num_iterations=10,
         #booster_params={},
         #objective="reg:squarederror",
