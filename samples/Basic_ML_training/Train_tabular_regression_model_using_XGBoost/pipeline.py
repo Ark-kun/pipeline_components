@@ -32,7 +32,7 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
         #num_iterations=10,
         #booster_params={},
         #objective="reg:squarederror",
-        #booster"gbtree",
+        #booster="gbtree",
         #learning_rate=0.3,
         #min_split_loss=0,
         #max_depth=6,

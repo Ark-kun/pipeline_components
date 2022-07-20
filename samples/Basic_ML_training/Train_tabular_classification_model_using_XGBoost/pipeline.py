@@ -38,7 +38,7 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
         #starting_model=None,
         #num_iterations=10,
         #booster_params={},
-        #booster"gbtree",
+        #booster="gbtree",
         #learning_rate=0.3,
         #min_split_loss=0,
         #max_depth=6,
