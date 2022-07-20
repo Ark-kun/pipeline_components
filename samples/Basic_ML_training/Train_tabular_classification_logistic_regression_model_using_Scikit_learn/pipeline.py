@@ -12,7 +12,7 @@ def train_tabular_classification_logistic_regression_model_using_Scikit_learn_pi
     dataset_gcs_uri = "gs://ml-pipeline-dataset/Chicago_taxi_trips/chicago_taxi_trips_2019-01-01_-_2019-02-01_limit=10000.csv"
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
-    all_columns = feature_columns + [label_column]
+    all_columns = [label_column] + feature_columns
 
     training_data = download_from_gcs_op(
         gcs_path=dataset_gcs_uri
