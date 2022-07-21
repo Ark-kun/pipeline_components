@@ -1,0 +1,44 @@
+name: Create google.Vertex* artifact from resource name
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/KFPv2_hell/components/google-cloud/Vertex_AI/Create_google.Vertex_artifact/From_resource_name/component.yaml'
+inputs:
+- {name: resource_name, type: String}
+- {name: artifact_type_name, type: String}
+outputs:
+- {name: resource_artifact}
+implementation:
+  container:
+    image: python:3.10
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      import json
+      import sys
+      from pathlib import Path
+
+      resource_name = sys.argv[1]
+      artifact_type_name = sys.argv[2]
+      executor_input = json.loads(sys.argv[3])
+
+      _, project, _, location, _, resource_id = resource_name.split("/")
+
+      # Setting the resource name in the artifact metadata
+      resource_artifact = executor_input["outputs"]["artifacts"]["resource_artifact"]["artifacts"][0]
+      resource_artifact["type"] = {"schemaTitle": artifact_type_name}
+      resource_artifact["metadata"]["resourceName"] = resource_name
+      # Changing the artifact URI does not seem to be required...
+      resource_artifact["uri"] = f"https://{location}-aiplatform.googleapis.com/v1/{resource_name}"
+      executor_output = {"artifacts": executor_input["outputs"]["artifacts"]}
+      executor_output_path = executor_input["outputs"]["outputFile"]
+      Path(executor_output_path).parent.mkdir(parents=True, exist_ok=True)
+      Path(executor_output_path).write_text(json.dumps(executor_output))
+    - {inputValue: resource_name}
+    - {inputValue: artifact_type_name}
+    - {executorInput: null}
