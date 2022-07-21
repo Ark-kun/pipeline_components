@@ -1,0 +1,74 @@
+name: Pipeline
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/KFPv2_hell/components/google-cloud/Vertex_AI/Models/Upload_Tensorflow_model/as_google.VertexModel/component.yaml'
+inputs:
+- {name: model, type: TensorflowSavedModel}
+- {name: tensorflow_version, type: String, default: '2.7', optional: true}
+- {name: use_gpu, type: Boolean, default: "False", optional: true}
+- {name: display_name, type: String, default: Tensorflow model, optional: true}
+- {name: description, type: String, optional: true}
+- {name: project, type: String, optional: true}
+- {name: location, type: String, default: us-central1, optional: true}
+- {name: labels, type: JsonObject, optional: true}
+- {name: staging_bucket, type: String, optional: true}
+outputs:
+- {name: model_name, type: GoogleCloudVertexAiModelName}
+- {name: model_dict, type: JsonObject}
+- {name: model_artifact, type: google.VertexModel}
+implementation:
+  graph:
+    tasks:
+      Upload Tensorflow model to Google Cloud Vertex AI:
+        componentRef:
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/719783ef44c04348ea23e247a93021d91cfe602d/components/google-cloud/Vertex_AI/Models/Upload_Tensorflow_model/component.yaml
+        arguments:
+          model:
+            graphInput:
+              inputName: model
+          tensorflow_version:
+            graphInput:
+              inputName: tensorflow_version
+          use_gpu:
+            graphInput:
+              inputName: use_gpu
+          display_name:
+            graphInput:
+              inputName: display_name
+          description:
+            graphInput:
+              inputName: description
+          project:
+            graphInput:
+              inputName: project
+          location:
+            graphInput:
+              inputName: location
+          labels:
+            graphInput:
+              inputName: labels
+          staging_bucket:
+            graphInput:
+              inputName: staging_bucket
+      Create google.VertexModel from GoogleCloudVertexAiModelName:
+        componentRef:
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/a3591483185d9c44bb25096509b38df378ed7715/components/google-cloud/Vertex_AI/Models/Create_google.VertexModel/from_GoogleCloudVertexAiModelName/component.yaml
+        arguments:
+          model_name:
+            taskOutput:
+              taskId: Upload Tensorflow model to Google Cloud Vertex AI
+              outputName: model_name
+    outputValues:
+      model_name:
+        taskOutput:
+          taskId: Upload Tensorflow model to Google Cloud Vertex AI
+          outputName: model_name
+      model_dict:
+        taskOutput:
+          taskId: Upload Tensorflow model to Google Cloud Vertex AI
+          outputName: model_dict
+      model_artifact:
+        taskOutput:
+          taskId: Create google.VertexModel from GoogleCloudVertexAiModelName
+          outputName: model
