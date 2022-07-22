@@ -1,4 +1,4 @@
-# pip install kfp google-cloud-aiplatform --upgrade --quiet
+# pip install "kfp<2.0.0" "google-cloud-aiplatform>=1.15.1" --upgrade --quiet
 from kfp import components
 
 # %% Loading components
@@ -62,10 +62,5 @@ pipeline_func = train_tabular_classification_model_using_XGBoost_pipeline
 
 # %% Pipeline submission
 if __name__ == '__main__':
-    # pip install --upgrade --no-deps --force-reinstall "git+https://github.com/Ark-kun/python-aiplatform@feat--Added-the-PipelineJob.submit_from_pipeline_func-method#egg=google-cloud-aiplatform&subdirectory=."
     from google.cloud import aiplatform
-
-    pipeline_job = aiplatform.PipelineJob.submit_from_pipeline_func(
-        pipeline_func=pipeline_func,
-        arguments={},
-    )
+    aiplatform.PipelineJob.from_pipeline_func(pipeline_func=pipeline_func).submit()
