@@ -5,10 +5,10 @@ from kfp.components import create_component_from_func, InputPath, OutputPath
 
 def upload_Tensorflow_model_to_Google_Cloud_Vertex_AI(
     model_path: InputPath("TensorflowSavedModel"),
-    tensorflow_version: str = "2.7",  # TODO: Remove the explicit default once the upload_tensorflow_saved_model supports None
+    tensorflow_version: str = None,
     use_gpu: bool = False,
 
-    display_name: str = "Tensorflow model",
+    display_name: str = None,
     description: str = None,
 
     # Uncomment when anyone requests these:
@@ -19,7 +19,7 @@ def upload_Tensorflow_model_to_Google_Cloud_Vertex_AI(
     # explanation_parameters: "google.cloud.aiplatform_v1.types.explanation.ExplanationParameters" = None,
 
     project: str = None,
-    location: str = "us-central1",
+    location: str = None,
     labels: dict = None,
     # encryption_spec_key_name: str = None,
     staging_bucket: str = None,
@@ -75,8 +75,7 @@ if __name__ == "__main__":
         func=upload_Tensorflow_model_to_Google_Cloud_Vertex_AI,
         base_image="python:3.9",
         packages_to_install=[
-            # "google-cloud-aiplatform==1.9.0",
-            "git+https://github.com/Ark-kun/python-aiplatform@1e1cbfef76b7c5c8db705d5c4c17c3691de7b032#egg=google-cloud-aiplatform&subdirectory=."   # branch: fix--Fixed-getitng-project-ID-when-running-on-Vertex-AI
+            "google-cloud-aiplatform==1.16.0",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
