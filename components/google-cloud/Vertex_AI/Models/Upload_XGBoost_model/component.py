@@ -18,7 +18,7 @@ def upload_XGBoost_model_to_Google_Cloud_Vertex_AI(
     # explanation_parameters: "google.cloud.aiplatform_v1.types.explanation.ExplanationParameters" = None,
 
     project: str = None,
-    location: str = "us-central1",
+    location: str = None,
     labels: dict = None,
     # encryption_spec_key_name: str = None,
     staging_bucket: str = None,
@@ -26,50 +26,42 @@ def upload_XGBoost_model_to_Google_Cloud_Vertex_AI(
     ("model_name", "GoogleCloudVertexAiModelName"),
     ("model_dict", dict),
 ]):
-    kwargs = locals()
-    kwargs.pop("model_path")
-
     import json
     import os
+    import shutil
+    import tempfile
     from google.cloud import aiplatform
 
-    # Problem: Unlike KFP, when running on Vertex AI, google.auth.default() returns incorrect GCP project ID.
-    # This leads to failure when trying to create any resource in the project.
-    # google.api_core.exceptions.PermissionDenied: 403 Permission 'aiplatform.models.upload' denied on resource '//aiplatform.googleapis.com/projects/gbd40bc90c7804989-tp/locations/us-central1' (or it may not exist).
-    # We can try and get the GCP project ID/number from the environment variables.
-    if not project:
-        project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
-        if project_number:
-            print(f"Inferred project number: {project_number}")
-            kwargs["project"] = project_number
-            # To improve the naming we try to convert the project number into the user project ID.
-            try:
-                from googleapiclient import discovery
-
-                cloud_resource_manager_service = discovery.build(
-                    "cloudresourcemanager", "v3"
-                )
-                project_id = (
-                    cloud_resource_manager_service.projects()
-                    .get(name=f"projects/{project_number}")
-                    .execute()["projectId"]
-                )
-                if project_id:
-                    print(f"Inferred project ID: {project_id}")
-                    kwargs["project"] = project_id
-            except Exception as e:
-                print(e)
-
     if not location:
-        kwargs["location"] = os.environ.get("CLOUD_ML_REGION")
+        location = os.environ.get("CLOUD_ML_REGION")
 
     if not labels:
-        kwargs["labels"] = {}
-    kwargs["labels"]["component-source"] = "github-com-ark-kun-pipeline-components"
+        labels = {}
+    labels["component-source"] = "github-com-ark-kun-pipeline-components"
+
+    # The serving container decides the model type based on the model file extension.
+    # So we need to rename the mode file (e.g. /tmp/inputs/model/data) to *.pkl
+    _, renamed_model_path = tempfile.mkstemp(suffix=".pkl")
+    shutil.copyfile(src=model_path, dst=renamed_model_path)
 
     model = aiplatform.Model.upload_xgboost_model_file(
-        model_file_path=model_path,
-        **kwargs,
+        model_file_path=renamed_model_path,
+        xgboost_version=xgboost_version,
+
+        display_name=display_name,
+        description=description,
+
+        # instance_schema_uri=instance_schema_uri,
+        # parameters_schema_uri=parameters_schema_uri,
+        # prediction_schema_uri=prediction_schema_uri,
+        # explanation_metadata=explanation_metadata,
+        # explanation_parameters=explanation_parameters,
+
+        project=project,
+        location=location,
+        labels=labels,
+        # encryption_spec_key_name=encryption_spec_key_name,
+        staging_bucket=staging_bucket,
     )
     model_json = json.dumps(model.to_dict(), indent=2)
     print(model_json)
@@ -88,9 +80,7 @@ if __name__ == "__main__":
         func=upload_XGBoost_model_to_Google_Cloud_Vertex_AI,
         base_image="python:3.9",
         packages_to_install=[
-            # "google-cloud-aiplatform==1.6.2",
-            "git+https://github.com/Ark-kun/python-aiplatform@8f61efb3a7903a6e0ef47d957f26ef3083581c7e#egg=google-cloud-aiplatform&subdirectory=.",  # branch: feat--Support-uploading-local-models
-            "google-api-python-client==2.29.0",  # For project number -> project ID conversion
+            "google-cloud-aiplatform==1.16.0",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
