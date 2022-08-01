@@ -3,15 +3,15 @@ metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Models/Upload_Tensorflow_model/component.yaml'}
 inputs:
 - {name: model, type: TensorflowSavedModel}
-- {name: tensorflow_version, type: String, default: '2.7', optional: true}
+- {name: tensorflow_version, type: String, optional: true}
 - name: use_gpu
   type: Boolean
   default: "False"
   optional: true
-- {name: display_name, type: String, default: Tensorflow model, optional: true}
+- {name: display_name, type: String, optional: true}
 - {name: description, type: String, optional: true}
 - {name: project, type: String, optional: true}
-- {name: location, type: String, default: us-central1, optional: true}
+- {name: location, type: String, optional: true}
 - {name: labels, type: JsonObject, optional: true}
 - {name: staging_bucket, type: String, optional: true}
 outputs:
@@ -24,9 +24,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'git+https://github.com/Ark-kun/python-aiplatform@1e1cbfef76b7c5c8db705d5c4c17c3691de7b032#egg=google-cloud-aiplatform&subdirectory=.'
-      || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'git+https://github.com/Ark-kun/python-aiplatform@1e1cbfef76b7c5c8db705d5c4c17c3691de7b032#egg=google-cloud-aiplatform&subdirectory=.'
+      'google-cloud-aiplatform==1.16.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform==1.16.0'
       --user) && "$0" "$@"
     - sh
     - -ec
@@ -37,10 +36,10 @@ implementation:
     - |
       def upload_Tensorflow_model_to_Google_Cloud_Vertex_AI(
           model_path,
-          tensorflow_version = "2.7",  # TODO: Remove the explicit default once the upload_tensorflow_saved_model supports None
+          tensorflow_version = None,
           use_gpu = False,
 
-          display_name = "Tensorflow model",
+          display_name = None,
           description = None,
 
           # Uncomment when anyone requests these:
@@ -51,7 +50,7 @@ implementation:
           # explanation_parameters: "google.cloud.aiplatform_v1.types.explanation.ExplanationParameters" = None,
 
           project = None,
-          location = "us-central1",
+          location = None,
           labels = None,
           # encryption_spec_key_name: str = None,
           staging_bucket = None,
