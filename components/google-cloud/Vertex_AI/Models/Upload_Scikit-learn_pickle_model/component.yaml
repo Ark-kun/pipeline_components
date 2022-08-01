@@ -7,7 +7,7 @@ inputs:
 - {name: display_name, type: String, optional: true}
 - {name: description, type: String, optional: true}
 - {name: project, type: String, optional: true}
-- {name: location, type: String, default: us-central1, optional: true}
+- {name: location, type: String, optional: true}
 - {name: labels, type: JsonObject, optional: true}
 - {name: staging_bucket, type: String, optional: true}
 outputs:
@@ -20,9 +20,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'git+https://github.com/Ark-kun/python-aiplatform@9b50f62b9d1409644656fb3202edc7be19c722f4#egg=google-cloud-aiplatform&subdirectory=.'
-      || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'git+https://github.com/Ark-kun/python-aiplatform@9b50f62b9d1409644656fb3202edc7be19c722f4#egg=google-cloud-aiplatform&subdirectory=.'
+      'google-cloud-aiplatform==1.16.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform==1.16.0'
       --user) && "$0" "$@"
     - sh
     - -ec
@@ -46,12 +45,11 @@ implementation:
           # explanation_parameters: "google.cloud.aiplatform_v1.types.explanation.ExplanationParameters" = None,
 
           project = None,
-          location = "us-central1",
+          location = None,
           labels = None,
           # encryption_spec_key_name: str = None,
           staging_bucket = None,
       ):
-          import datetime
           import json
           import os
           import shutil
@@ -69,8 +67,6 @@ implementation:
           # So we need to rename the mode file (e.g. /tmp/inputs/model/data) to *.pkl
           _, renamed_model_path = tempfile.mkstemp(suffix=".pkl")
           shutil.copyfile(src=model_path, dst=renamed_model_path)
-
-          display_name = display_name or "Scikit-learn model " + datetime.datetime.now().isoformat(sep=" ")
 
           model = aiplatform.Model.upload_scikit_learn_model_file(
               model_file_path=renamed_model_path,
