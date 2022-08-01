@@ -1,0 +1,105 @@
+name: Merge dicts
+description: Merges multiple JSON objects into one.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/json/Dict/Merge/component.yaml'}
+inputs:
+- {name: dict_1, type: JsonObject, optional: true}
+- {name: dict_2, type: JsonObject, optional: true}
+- {name: dict_3, type: JsonObject, optional: true}
+- {name: dict_4, type: JsonObject, optional: true}
+- {name: dict_5, type: JsonObject, optional: true}
+outputs:
+- {name: Output, type: JsonObject}
+implementation:
+  container:
+    image: python:3.10
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def merge_dicts(
+          dict_1 = None,
+          dict_2 = None,
+          dict_3 = None,
+          dict_4 = None,
+          dict_5 = None,
+      ):
+          """Merges multiple JSON objects into one."""
+          result = {}
+          for dict in [dict_1, dict_2, dict_3, dict_4, dict_5]:
+              if dict is not None:
+                  result.update(dict)
+          return result
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Merge dicts', description='Merges multiple JSON objects into one.')
+      _parser.add_argument("--dict-1", dest="dict_1", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--dict-2", dest="dict_2", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--dict-3", dest="dict_3", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--dict-4", dest="dict_4", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--dict-5", dest="dict_5", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = merge_dicts(**_parsed_args)
+
+      _outputs = [_outputs]
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - if:
+        cond: {isPresent: dict_1}
+        then:
+        - --dict-1
+        - {inputValue: dict_1}
+    - if:
+        cond: {isPresent: dict_2}
+        then:
+        - --dict-2
+        - {inputValue: dict_2}
+    - if:
+        cond: {isPresent: dict_3}
+        then:
+        - --dict-3
+        - {inputValue: dict_3}
+    - if:
+        cond: {isPresent: dict_4}
+        then:
+        - --dict-4
+        - {inputValue: dict_4}
+    - if:
+        cond: {isPresent: dict_5}
+        then:
+        - --dict-5
+        - {inputValue: dict_5}
+    - '----output-paths'
+    - {outputPath: Output}

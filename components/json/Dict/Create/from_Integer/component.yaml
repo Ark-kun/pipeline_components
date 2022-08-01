@@ -1,0 +1,70 @@
+name: Create dict from integer value
+description: Creates a JSON object from key and value.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/json/Dict/Create/from_Integer/component.yaml'}
+inputs:
+- {name: key, type: String}
+- {name: value, type: Integer}
+outputs:
+- {name: Output, type: JsonArray}
+implementation:
+  container:
+    image: python:3.10
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def create_dict_from_integer_value(
+          key,
+          value,
+      ):
+          """Creates a JSON object from key and value."""
+          return {key: value}
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Create dict from integer value', description='Creates a JSON object from key and value.')
+      _parser.add_argument("--key", dest="key", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--value", dest="value", type=int, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = create_dict_from_integer_value(**_parsed_args)
+
+      _outputs = [_outputs]
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --key
+    - {inputValue: key}
+    - --value
+    - {inputValue: value}
+    - '----output-paths'
+    - {outputPath: Output}

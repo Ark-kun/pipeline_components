@@ -1,0 +1,70 @@
+name: Get integer item from dict
+description: Gets item from a JSON array.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/json/Dict/Get/Integer/component.yaml'}
+inputs:
+- {name: dict, type: JsonObject}
+- {name: key, type: String}
+outputs:
+- {name: Output, type: Integer}
+implementation:
+  container:
+    image: python:3.10
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def get_integer_item_from_dict(
+          dict,
+          key,
+      ):
+          """Gets item from a JSON array."""
+          result = dict[key]
+          if not isinstance(result, int):
+              raise TypeError(f"Expected an integer. Got {result}")
+          return result
+
+      def _serialize_int(int_value: int) -> str:
+          if isinstance(int_value, str):
+              return int_value
+          if not isinstance(int_value, int):
+              raise TypeError('Value "{}" has type "{}" instead of int.'.format(str(int_value), str(type(int_value))))
+          return str(int_value)
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Get integer item from dict', description='Gets item from a JSON array.')
+      _parser.add_argument("--dict", dest="dict", type=json.loads, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--key", dest="key", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = get_integer_item_from_dict(**_parsed_args)
+
+      _outputs = [_outputs]
+
+      _output_serializers = [
+          _serialize_int,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --dict
+    - {inputValue: dict}
+    - --key
+    - {inputValue: key}
+    - '----output-paths'
+    - {outputPath: Output}
