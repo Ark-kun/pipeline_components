@@ -18,7 +18,7 @@ def upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI(
     # explanation_parameters: "google.cloud.aiplatform_v1.types.explanation.ExplanationParameters" = None,
 
     project: str = None,
-    location: str = "us-central1",
+    location: str = None,
     labels: dict = None,
     # encryption_spec_key_name: str = None,
     staging_bucket: str = None,
@@ -26,7 +26,6 @@ def upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI(
     ("model_name", "GoogleCloudVertexAiModelName"),
     ("model_dict", dict),
 ]):
-    import datetime
     import json
     import os
     import shutil
@@ -44,8 +43,6 @@ def upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI(
     # So we need to rename the mode file (e.g. /tmp/inputs/model/data) to *.pkl
     _, renamed_model_path = tempfile.mkstemp(suffix=".pkl")
     shutil.copyfile(src=model_path, dst=renamed_model_path)
-
-    display_name = display_name or "Scikit-learn model " + datetime.datetime.now().isoformat(sep=" ")
 
     model = aiplatform.Model.upload_scikit_learn_model_file(
         model_file_path=renamed_model_path,
@@ -82,8 +79,7 @@ if __name__ == "__main__":
         func=upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI,
         base_image="python:3.9",
         packages_to_install=[
-            # "google-cloud-aiplatform==1.10.0",
-            "git+https://github.com/Ark-kun/python-aiplatform@9b50f62b9d1409644656fb3202edc7be19c722f4#egg=google-cloud-aiplatform&subdirectory=."   # branch: fix--Fixed-getitng-project-ID-when-running-on-Vertex-AI
+            "google-cloud-aiplatform==1.16.0",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
