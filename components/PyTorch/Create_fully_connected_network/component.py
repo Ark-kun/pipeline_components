@@ -4,6 +4,7 @@ def create_fully_connected_pytorch_network(
     layer_sizes: list,
     model_path: OutputPath('PyTorchScriptModule'),
     activation_name: str = 'relu',
+    output_activation_name: str = None,
     random_seed: int = 0,
 ):
     '''Creates fully-connected network in PyTorch ScriptModule format'''
@@ -24,6 +25,13 @@ def create_fully_connected_pytorch_network(
         layers.append(layer)
         if layer_idx < len(layer_sizes) - 2:
             layers.append(ActivationLayer())
+
+    if output_activation_name:
+        output_activation = getattr(torch, output_activation_name, None) or getattr(torch.nn.functional, output_activation_name, None)
+        class OutputActivationLayer(torch.nn.Module):
+            def forward(self, input):
+                return output_activation(input)
+        layers.append(OutputActivationLayer())
 
     network = torch.nn.Sequential(*layers)
     script_module = torch.jit.script(network)

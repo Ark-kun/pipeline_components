@@ -5,6 +5,7 @@ metadata:
 inputs:
 - {name: layer_sizes, type: JsonArray}
 - {name: activation_name, type: String, default: relu, optional: true}
+- {name: output_activation_name, type: String, optional: true}
 - {name: random_seed, type: Integer, default: '0', optional: true}
 outputs:
 - {name: model, type: PyTorchScriptModule}
@@ -28,6 +29,7 @@ implementation:
           layer_sizes,
           model_path,
           activation_name = 'relu',
+          output_activation_name = None,
           random_seed = 0,
       ):
           '''Creates fully-connected network in PyTorch ScriptModule format'''
@@ -49,6 +51,13 @@ implementation:
               if layer_idx < len(layer_sizes) - 2:
                   layers.append(ActivationLayer())
 
+          if output_activation_name:
+              output_activation = getattr(torch, output_activation_name, None) or getattr(torch.nn.functional, output_activation_name, None)
+              class OutputActivationLayer(torch.nn.Module):
+                  def forward(self, input):
+                      return output_activation(input)
+              layers.append(OutputActivationLayer())
+
           network = torch.nn.Sequential(*layers)
           script_module = torch.jit.script(network)
           print(script_module)
@@ -59,6 +68,7 @@ implementation:
       _parser = argparse.ArgumentParser(prog='Create fully connected pytorch network', description='Creates fully-connected network in PyTorch ScriptModule format')
       _parser.add_argument("--layer-sizes", dest="layer_sizes", type=json.loads, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--activation-name", dest="activation_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--output-activation-name", dest="output_activation_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--random-seed", dest="random_seed", type=int, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--model", dest="model_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parsed_args = vars(_parser.parse_args())
@@ -72,6 +82,11 @@ implementation:
         then:
         - --activation-name
         - {inputValue: activation_name}
+    - if:
+        cond: {isPresent: output_activation_name}
+        then:
+        - --output-activation-name
+        - {inputValue: output_activation_name}
     - if:
         cond: {isPresent: random_seed}
         then:
