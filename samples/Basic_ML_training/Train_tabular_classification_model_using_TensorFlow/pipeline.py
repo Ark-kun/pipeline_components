@@ -55,12 +55,11 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
 pipeline_func = train_tabular_classification_model_using_TensorFlow_pipeline
 
 # %% Pipeline submission
-if __name__ == '__main__':
-    import os
+if __name__ == "__main__":
     import kfp
-
-    kfp_endpoint = os.environ.get("KFP_ENDPOINT")
-    kfp.Client(host=kfp_endpoint).create_run_from_pipeline_func(
+    # Set the KF_PIPELINES_ENDPOINT environment variable to the KFP endpoint URL:
+    # import os; os.environ["KF_PIPELINES_ENDPOINT"] = "https://XXXXXXXXXXXXXXXX-dot-us-central2.pipelines.googleusercontent.com"
+    kfp.Client().create_run_from_pipeline_func(
         pipeline_func,
         arguments={},
     )
