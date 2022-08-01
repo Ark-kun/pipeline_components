@@ -5,6 +5,7 @@ def create_fully_connected_tensorflow_network(
     layer_sizes: list,
     model_path: OutputPath("TensorflowSavedModel"),
     activation_name: str = "relu",
+    output_activation_name: str = None,
     random_seed: int = 0,
 ):
     """Creates fully-connected network in Tensorflow SavedModel format"""
@@ -19,7 +20,7 @@ def create_fully_connected_tensorflow_network(
     for layer_size in layer_sizes[1:-1]:
         model.add(tf.keras.layers.Dense(units=layer_size, activation=activation_name))
     # The last layer is left without activation
-    model.add(tf.keras.layers.Dense(units=layer_sizes[-1]))
+    model.add(tf.keras.layers.Dense(units=layer_sizes[-1], activation=output_activation_name))
 
     # Using tf.keras.models.save_model instead of tf.saved_model.save to prevent downstream error:
     #tf.saved_model.save(model, model_path)
