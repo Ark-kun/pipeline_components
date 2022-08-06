@@ -1,25 +1,15 @@
 name: Xgboost predict
-description: |-
-  Make predictions using a trained XGBoost model.
-
-      Args:
-          data_path: Path for the feature data in CSV format.
-          model_path: Path for the trained model in binary XGBoost format.
-          predictions_path: Output path for the predictions.
-          label_column: Column containing the label data.
-
-      Annotations:
-          author: Alexey Volkov <alexey.volkov@ark-kun.com>
-inputs:
-- {name: data, type: CSV}
-- {name: model, type: XGBoostModel}
-- {name: label_column, type: Integer, optional: true}
-outputs:
-- {name: predictions, type: Predictions}
+description: Make predictions using a trained XGBoost model.
 metadata:
-  annotations:
-    author: Alexey Volkov <alexey.volkov@ark-kun.com>
-    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Predict/component.yaml'
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Predict/component.yaml'}
+inputs:
+- {name: data, type: CSV, description: Path for the feature data in CSV format.}
+- {name: model, type: XGBoostModel, description: Path for the trained model in binary
+    XGBoost format.}
+- {name: label_column, type: Integer, description: Column containing the label data.,
+  optional: true}
+outputs:
+- {name: predictions, type: Text, description: Output path for the predictions.}
 implementation:
   container:
     image: python:3.7
@@ -30,9 +20,12 @@ implementation:
       'xgboost==1.1.1' 'pandas==1.0.5' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
       -m pip install --quiet --no-warn-script-location 'xgboost==1.1.1' 'pandas==1.0.5'
       --user) && "$0" "$@"
-    - python3
-    - -u
-    - -c
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
     - |
       def _make_parent_dirs_and_return_path(file_path: str):
           import os
@@ -81,7 +74,7 @@ implementation:
           numpy.savetxt(predictions_path, predictions)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Xgboost predict', description='Make predictions using a trained XGBoost model.\n\n    Args:\n        data_path: Path for the feature data in CSV format.\n        model_path: Path for the trained model in binary XGBoost format.\n        predictions_path: Output path for the predictions.\n        label_column: Column containing the label data.\n\n    Annotations:\n        author: Alexey Volkov <alexey.volkov@ark-kun.com>')
+      _parser = argparse.ArgumentParser(prog='Xgboost predict', description='Make predictions using a trained XGBoost model.')
       _parser.add_argument("--data", dest="data_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--label-column", dest="label_column", type=int, required=False, default=argparse.SUPPRESS)
