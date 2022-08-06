@@ -1,15 +1,16 @@
 name: Xgboost train
-description: Train an XGBoost model.
+description: Trains an XGBoost model.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Train/from_ApacheParquet/component.yaml'}
 inputs:
-- {name: training_data, type: ApacheParquet, description: Path for the training data
-    in Apache Parquet format.}
+- {name: training_data, type: ApacheParquet, description: Training data in the Apache
+    Parquet format.}
 - {name: label_column_name, type: String, description: Name of the column containing
     the label data.}
-- {name: starting_model, type: XGBoostModel, description: Path for the existing trained
-    model to start from., optional: true}
-- {name: num_iterations, type: Integer, default: '10', optional: true}
+- {name: starting_model, type: XGBoostModel, description: Existing trained model to
+    start from (in the binary XGBoost format)., optional: true}
+- {name: num_iterations, type: Integer, description: Number of boosting iterations.,
+  default: '10', optional: true}
 - {name: booster_params, type: JsonObject, description: 'Parameters for the booster.
     See https://xgboost.readthedocs.io/en/latest/parameter.html', optional: true}
 - name: objective
@@ -26,15 +27,30 @@ inputs:
     "rank:ndcg" - Use LambdaMART to perform list-wise ranking where Normalized Discounted Cumulative Gain (NDCG) is maximized
   default: reg:squarederror
   optional: true
-- {name: booster, type: String, default: gbtree, optional: true}
-- {name: learning_rate, type: Float, default: '0.3', optional: true}
-- {name: min_split_loss, type: Float, default: '0', optional: true}
-- {name: max_depth, type: Integer, default: '6', optional: true}
+- {name: booster, type: String, description: 'The booster to use. Can be `gbtree`,
+    `gblinear` or `dart`; `gbtree` and `dart` use tree based models while `gblinear`
+    uses linear functions.', default: gbtree, optional: true}
+- {name: learning_rate, type: Float, description: 'Step size shrinkage used in update
+    to prevents overfitting. Range: [0,1].', default: '0.3', optional: true}
+- name: min_split_loss
+  type: Float
+  description: |-
+    Minimum loss reduction required to make a further partition on a leaf node of the tree.
+    The larger `min_split_loss` is, the more conservative the algorithm will be. Range: [0,Inf].
+  default: '0'
+  optional: true
+- name: max_depth
+  type: Integer
+  description: |-
+    Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+    0 indicates no limit on depth. Range: [0,Inf].
+  default: '6'
+  optional: true
 outputs:
-- {name: model, type: XGBoostModel, description: Output path for the trained model
-    in binary XGBoost format.}
-- {name: model_config, type: XGBoostModelConfig, description: Output path for the
-    internal parameter configuration of Booster as a JSON string.}
+- {name: model, type: XGBoostModel, description: Trained model in the binary XGBoost
+    format.}
+- {name: model_config, type: XGBoostModelConfig, description: The internal parameter
+    configuration of Booster as a JSON string.}
 implementation:
   container:
     image: python:3.7
@@ -75,15 +91,15 @@ implementation:
           min_split_loss = 0,
           max_depth = 6,
       ):
-          '''Train an XGBoost model.
+          '''Trains an XGBoost model.
 
           Args:
-              training_data_path: Path for the training data in Apache Parquet format.
-              model_path: Output path for the trained model in binary XGBoost format.
-              model_config_path: Output path for the internal parameter configuration of Booster as a JSON string.
-              starting_model_path: Path for the existing trained model to start from.
+              training_data_path: Training data in the Apache Parquet format.
+              model_path: Trained model in the binary XGBoost format.
+              model_config_path: The internal parameter configuration of Booster as a JSON string.
+              starting_model_path: Existing trained model to start from (in the binary XGBoost format).
               label_column_name: Name of the column containing the label data.
-              num_boost_rounds: Number of boosting iterations.
+              num_iterations: Number of boosting iterations.
               booster_params: Parameters for the booster. See https://xgboost.readthedocs.io/en/latest/parameter.html
               objective: The learning task and the corresponding learning objective.
                   See https://xgboost.readthedocs.io/en/latest/parameter.html#learning-task-parameters
@@ -94,6 +110,12 @@ implementation:
                   "binary:logitraw" - Logistic regression for binary classification, output score before logistic transformation
                   "rank:pairwise" - Use LambdaMART to perform pairwise ranking where the pairwise loss is minimized
                   "rank:ndcg" - Use LambdaMART to perform list-wise ranking where Normalized Discounted Cumulative Gain (NDCG) is maximized
+              booster: The booster to use. Can be `gbtree`, `gblinear` or `dart`; `gbtree` and `dart` use tree based models while `gblinear` uses linear functions.
+              learning_rate: Step size shrinkage used in update to prevents overfitting. Range: [0,1].
+              min_split_loss: Minimum loss reduction required to make a further partition on a leaf node of the tree.
+                  The larger `min_split_loss` is, the more conservative the algorithm will be. Range: [0,Inf].
+              max_depth: Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+                  0 indicates no limit on depth. Range: [0,Inf].
 
           Annotations:
               author: Alexey Volkov <alexey.volkov@ark-kun.com>
@@ -135,7 +157,7 @@ implementation:
 
       import json
       import argparse
-      _parser = argparse.ArgumentParser(prog='Xgboost train', description='Train an XGBoost model.')
+      _parser = argparse.ArgumentParser(prog='Xgboost train', description='Trains an XGBoost model.')
       _parser.add_argument("--training-data", dest="training_data_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--starting-model", dest="starting_model_path", type=str, required=False, default=argparse.SUPPRESS)

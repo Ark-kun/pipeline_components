@@ -18,15 +18,15 @@ def xgboost_train(
     min_split_loss: float = 0,
     max_depth: int = 6,
 ):
-    '''Train an XGBoost model.
+    '''Trains an XGBoost model.
 
     Args:
-        training_data_path: Path for the training data in Apache Parquet format.
-        model_path: Output path for the trained model in binary XGBoost format.
-        model_config_path: Output path for the internal parameter configuration of Booster as a JSON string.
-        starting_model_path: Path for the existing trained model to start from.
+        training_data_path: Training data in the Apache Parquet format.
+        model_path: Trained model in the binary XGBoost format.
+        model_config_path: The internal parameter configuration of Booster as a JSON string.
+        starting_model_path: Existing trained model to start from (in the binary XGBoost format).
         label_column_name: Name of the column containing the label data.
-        num_boost_rounds: Number of boosting iterations.
+        num_iterations: Number of boosting iterations.
         booster_params: Parameters for the booster. See https://xgboost.readthedocs.io/en/latest/parameter.html
         objective: The learning task and the corresponding learning objective.
             See https://xgboost.readthedocs.io/en/latest/parameter.html#learning-task-parameters
@@ -37,6 +37,12 @@ def xgboost_train(
             "binary:logitraw" - Logistic regression for binary classification, output score before logistic transformation
             "rank:pairwise" - Use LambdaMART to perform pairwise ranking where the pairwise loss is minimized
             "rank:ndcg" - Use LambdaMART to perform list-wise ranking where Normalized Discounted Cumulative Gain (NDCG) is maximized
+        booster: The booster to use. Can be `gbtree`, `gblinear` or `dart`; `gbtree` and `dart` use tree based models while `gblinear` uses linear functions.
+        learning_rate: Step size shrinkage used in update to prevents overfitting. Range: [0,1].
+        min_split_loss: Minimum loss reduction required to make a further partition on a leaf node of the tree.
+            The larger `min_split_loss` is, the more conservative the algorithm will be. Range: [0,Inf].
+        max_depth: Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+            0 indicates no limit on depth. Range: [0,Inf].
 
     Annotations:
         author: Alexey Volkov <alexey.volkov@ark-kun.com>
