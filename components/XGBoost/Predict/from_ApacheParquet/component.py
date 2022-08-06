@@ -6,12 +6,12 @@ def xgboost_predict(
     predictions_path: OutputPath('Text'),
     label_column_name: str = None,
 ):
-    '''Make predictions using a trained XGBoost model.
+    '''Makes predictions using a trained XGBoost model.
 
     Args:
-        data_path: Path for the feature data in Apache Parquet format.
-        model_path: Path for the trained model in binary XGBoost format.
-        predictions_path: Output path for the predictions.
+        data_path: Feature data in Apache Parquet format.
+        model_path: Trained model in binary XGBoost format.
+        predictions_path: Model predictions.
         label_column_name: Optional. Name of the column containing the label data that is excluded during the prediction.
 
     Annotations:

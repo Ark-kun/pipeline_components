@@ -1,15 +1,14 @@
 name: Xgboost predict
-description: Make predictions using a trained XGBoost model.
+description: Makes predictions using a trained XGBoost model.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Predict/component.yaml'}
 inputs:
-- {name: data, type: CSV, description: Path for the feature data in CSV format.}
-- {name: model, type: XGBoostModel, description: Path for the trained model in binary
-    XGBoost format.}
-- {name: label_column, type: Integer, description: Column containing the label data.,
-  optional: true}
+- {name: data, type: CSV, description: Feature data in Apache Parquet format.}
+- {name: model, type: XGBoostModel, description: Trained model in binary XGBoost format.}
+- {name: label_column, type: Integer, description: Optional. Index of the column containing
+    the label data that is excluded during the prediction., optional: true}
 outputs:
-- {name: predictions, type: Text, description: Output path for the predictions.}
+- {name: predictions, type: Text, description: Model predictions.}
 implementation:
   container:
     image: python:3.7
@@ -33,18 +32,18 @@ implementation:
           return file_path
 
       def xgboost_predict(
-          data_path,  # Also supports LibSVM
+          data_path,
           model_path,
           predictions_path,
           label_column = None,
       ):
-          '''Make predictions using a trained XGBoost model.
+          '''Makes predictions using a trained XGBoost model.
 
           Args:
-              data_path: Path for the feature data in CSV format.
-              model_path: Path for the trained model in binary XGBoost format.
-              predictions_path: Output path for the predictions.
-              label_column: Column containing the label data.
+              data_path: Feature data in Apache Parquet format.
+              model_path: Trained model in binary XGBoost format.
+              predictions_path: Model predictions.
+              label_column: Optional. Index of the column containing the label data that is excluded during the prediction.
 
           Annotations:
               author: Alexey Volkov <alexey.volkov@ark-kun.com>
@@ -74,7 +73,7 @@ implementation:
           numpy.savetxt(predictions_path, predictions)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Xgboost predict', description='Make predictions using a trained XGBoost model.')
+      _parser = argparse.ArgumentParser(prog='Xgboost predict', description='Makes predictions using a trained XGBoost model.')
       _parser.add_argument("--data", dest="data_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--label-column", dest="label_column", type=int, required=False, default=argparse.SUPPRESS)

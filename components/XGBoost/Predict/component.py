@@ -1,18 +1,18 @@
 from kfp.components import InputPath, OutputPath, create_component_from_func
 
 def xgboost_predict(
-    data_path: InputPath('CSV'),  # Also supports LibSVM
+    data_path: InputPath('CSV'),
     model_path: InputPath('XGBoostModel'),
     predictions_path: OutputPath('Text'),
     label_column: int = None,
 ):
-    '''Make predictions using a trained XGBoost model.
+    '''Makes predictions using a trained XGBoost model.
 
     Args:
-        data_path: Path for the feature data in CSV format.
-        model_path: Path for the trained model in binary XGBoost format.
-        predictions_path: Output path for the predictions.
-        label_column: Column containing the label data.
+        data_path: Feature data in Apache Parquet format.
+        model_path: Trained model in binary XGBoost format.
+        predictions_path: Model predictions.
+        label_column: Optional. Index of the column containing the label data that is excluded during the prediction.
 
     Annotations:
         author: Alexey Volkov <alexey.volkov@ark-kun.com>
