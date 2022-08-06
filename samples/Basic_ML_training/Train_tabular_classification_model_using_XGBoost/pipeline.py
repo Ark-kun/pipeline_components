@@ -4,8 +4,8 @@ from kfp import components
 download_from_gcs_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/google-cloud/storage/download/component.yaml")
 select_columns_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml")
 binarize_column_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml")
-xgboost_train_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml")
-xgboost_predict_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml")
+xgboost_train_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Train/component.yaml")
+xgboost_predict_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Predict/component.yaml")
 
 # %% Pipeline definition
 def train_tabular_classification_model_using_XGBoost_pipeline():
@@ -32,7 +32,7 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
 
     model = xgboost_train_on_csv_op(
         training_data=classification_training_data,
-        label_column=0,
+        label_column_name=label_column,
         objective="binary:logistic",
         # Optional:
         #starting_model=None,
@@ -49,7 +49,7 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
         data=classification_training_data,
         model=model,
         # label_column needs to be set when doing prediction on a dataset that has labels
-        label_column=0,
+        label_column_name=label_column,
     ).outputs["predictions"]
 
 pipeline_func = train_tabular_classification_model_using_XGBoost_pipeline

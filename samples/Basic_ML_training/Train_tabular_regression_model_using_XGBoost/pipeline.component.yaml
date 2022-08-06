@@ -29,21 +29,21 @@ implementation:
           editor.position: '{"x":40,"y":120,"width":180,"height":54}'
       Xgboost train:
         componentRef:
-          digest: 58d279448fda37f1ad85d39751b987bcecaa950281287fdac756315d186f03a3
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Train/component.yaml
+          digest: 7bbc658a62274525c7371211e78e54edfdc70326987d410d2a57f8213ec7ea34
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Train/component.yaml
         arguments:
           training_data:
             taskOutput:
               outputName: transformed_table
               taskId: Select columns using Pandas on CSV data
               type: CSV
-          label_column: '0'
+          label_column_name: tips
         annotations:
           editor.position: '{"x":140,"y":250,"width":180,"height":40}'
       Xgboost predict:
         componentRef:
-          digest: 078a0ecebb80c2743b13db45aeb3c26cde4e9b0c500bd429c7db1cd2bc565d9a
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/XGBoost/Predict/component.yaml
+          digest: 9fba0413388c06509e054282a4396c8ebc30877b545644c8888a94d750f6122a
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Predict/component.yaml
         arguments:
           data:
             taskOutput:
@@ -55,7 +55,7 @@ implementation:
               outputName: model
               taskId: Xgboost train
               type: XGBoostModel
-          label_column: '0'
+          label_column_name: tips
         annotations:
           editor.position: '{"x":40,"y":370,"width":180,"height":40}'
     outputValues: {}
