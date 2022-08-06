@@ -4,9 +4,10 @@ def xgboost_train(
     training_data_path: InputPath('CSV'),
     model_path: OutputPath('XGBoostModel'),
     model_config_path: OutputPath('XGBoostModelConfig'),
+    label_column_name: str,
+
     starting_model_path: InputPath('XGBoostModel') = None,
 
-    label_column: int = 0,
     num_iterations: int = 10,
     booster_params: dict = None,
 
@@ -24,7 +25,7 @@ def xgboost_train(
         model_path: Trained model in the binary XGBoost format.
         model_config_path: The internal parameter configuration of Booster as a JSON string.
         starting_model_path: Existing trained model to start from (in the binary XGBoost format).
-        label_column: Column containing the label data.
+        label_column_name: Name of the column containing the label data.
         num_iterations: Number of boosting iterations.
         booster_params: Parameters for the booster. See https://xgboost.readthedocs.io/en/latest/parameter.html
         objective: The learning task and the corresponding learning objective.
@@ -54,8 +55,8 @@ def xgboost_train(
     )
 
     training_data = xgboost.DMatrix(
-        data=df.drop(columns=[df.columns[label_column]]),
-        label=df[df.columns[label_column]],
+        data=df.drop(columns=[label_column_name]),
+        label=df[[label_column_name]],
     )
 
     booster_params = booster_params or {}

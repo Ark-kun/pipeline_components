@@ -4,7 +4,7 @@ def xgboost_predict(
     data_path: InputPath('CSV'),
     model_path: InputPath('XGBoostModel'),
     predictions_path: OutputPath('Text'),
-    label_column: int = None,
+    label_column_name: str = None,
 ):
     '''Makes predictions using a trained XGBoost model.
 
@@ -12,7 +12,7 @@ def xgboost_predict(
         data_path: Feature data in Apache Parquet format.
         model_path: Trained model in binary XGBoost format.
         predictions_path: Model predictions.
-        label_column: Optional. Index of the column containing the label data that is excluded during the prediction.
+        label_column_name: Optional. Name of the column containing the label data that is excluded during the prediction.
 
     Annotations:
         author: Alexey Volkov <alexey.volkov@ark-kun.com>
@@ -27,8 +27,8 @@ def xgboost_predict(
         data_path,
     )
 
-    if label_column is not None:
-        df = df.drop(columns=[df.columns[label_column]])
+    if label_column_name is not None:
+        df = df.drop(columns=[label_column_name])
 
     testing_data = xgboost.DMatrix(
         data=df,
