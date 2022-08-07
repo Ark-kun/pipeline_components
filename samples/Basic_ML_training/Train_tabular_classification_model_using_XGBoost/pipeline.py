@@ -1,3 +1,4 @@
+# python3 -m pip install "kfp<2.0.0" --upgrade --quiet
 from kfp import components
 
 # %% Loading components

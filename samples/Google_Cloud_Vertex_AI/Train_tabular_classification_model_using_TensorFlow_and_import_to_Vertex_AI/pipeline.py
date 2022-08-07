@@ -1,4 +1,4 @@
-# pip install "kfp<2.0.0" "google-cloud-aiplatform>=1.15.1" --upgrade --quiet
+# python3 -m pip install "kfp<2.0.0" "google-cloud-aiplatform>=1.16.0" --upgrade --quiet
 from kfp import components
 
 # %% Loading components
