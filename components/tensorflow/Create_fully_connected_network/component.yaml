@@ -3,7 +3,9 @@ description: Creates fully-connected network in Tensorflow SavedModel format
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/tensorflow/Create_fully_connected_network/component.yaml'}
 inputs:
-- {name: layer_sizes, type: JsonArray}
+- {name: input_size, type: Integer}
+- {name: hidden_layer_sizes, type: JsonArray, default: '[]', optional: true}
+- {name: output_size, type: Integer, default: '1', optional: true}
 - {name: activation_name, type: String, default: relu, optional: true}
 - {name: output_activation_name, type: String, optional: true}
 - {name: random_seed, type: Integer, default: '0', optional: true}
@@ -26,8 +28,10 @@ implementation:
           return file_path
 
       def create_fully_connected_tensorflow_network(
-          layer_sizes,
+          input_size,
           model_path,
+          hidden_layer_sizes = [],
+          output_size = 1,
           activation_name = "relu",
           output_activation_name = None,
           random_seed = 0,
@@ -36,15 +40,12 @@ implementation:
           import tensorflow as tf
           tf.random.set_seed(seed=random_seed)
 
-          if len(layer_sizes) < 2:
-              raise ValueError(f"Fully-connected network requires at least two layer sizes (input and output). Got {layer_sizes}.")
-
           model = tf.keras.models.Sequential()
-          model.add(tf.keras.Input(shape=(layer_sizes[0],)))
-          for layer_size in layer_sizes[1:-1]:
+          model.add(tf.keras.Input(shape=(input_size,)))
+          for layer_size in hidden_layer_sizes:
               model.add(tf.keras.layers.Dense(units=layer_size, activation=activation_name))
           # The last layer is left without activation
-          model.add(tf.keras.layers.Dense(units=layer_sizes[-1], activation=output_activation_name))
+          model.add(tf.keras.layers.Dense(units=output_size, activation=output_activation_name))
 
           # Using tf.keras.models.save_model instead of tf.saved_model.save to prevent downstream error:
           #tf.saved_model.save(model, model_path)
@@ -57,7 +58,9 @@ implementation:
       import json
       import argparse
       _parser = argparse.ArgumentParser(prog='Create fully connected tensorflow network', description='Creates fully-connected network in Tensorflow SavedModel format')
-      _parser.add_argument("--layer-sizes", dest="layer_sizes", type=json.loads, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--input-size", dest="input_size", type=int, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--hidden-layer-sizes", dest="hidden_layer_sizes", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--output-size", dest="output_size", type=int, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--activation-name", dest="activation_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--output-activation-name", dest="output_activation_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--random-seed", dest="random_seed", type=int, required=False, default=argparse.SUPPRESS)
@@ -66,8 +69,18 @@ implementation:
 
       _outputs = create_fully_connected_tensorflow_network(**_parsed_args)
     args:
-    - --layer-sizes
-    - {inputValue: layer_sizes}
+    - --input-size
+    - {inputValue: input_size}
+    - if:
+        cond: {isPresent: hidden_layer_sizes}
+        then:
+        - --hidden-layer-sizes
+        - {inputValue: hidden_layer_sizes}
+    - if:
+        cond: {isPresent: output_size}
+        then:
+        - --output-size
+        - {inputValue: output_size}
     - if:
         cond: {isPresent: activation_name}
         then:
