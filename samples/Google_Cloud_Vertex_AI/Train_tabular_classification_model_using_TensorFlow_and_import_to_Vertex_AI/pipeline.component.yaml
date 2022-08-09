@@ -1,0 +1,88 @@
+name: Train tabular classification model using TensorFlow pipeline
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/samples/Google_Cloud_Vertex_AI/Train_tabular_classification_model_using_TensorFlow_and_import_to_Vertex_AI/pipeline.component.yaml
+    sdk: https://cloud-pipelines.net/pipeline-editor/
+implementation:
+  graph:
+    tasks:
+      Download from GCS:
+        componentRef:
+          digest: 471518bc785e1f3ad06f1d546e4dcac7c6872e7bba34a28c10b9b539c4c84e58
+          url: https://raw.githubusercontent.com/kubeflow/pipelines/c783705c0e566c611ef70160a01e3ed0865051bd/components/contrib/google-cloud/storage/download/component.yaml
+        arguments:
+          GCS path: gs://ml-pipeline-dataset/Chicago_taxi_trips/chicago_taxi_trips_2019-01-01_-_2019-02-01_limit=10000.csv
+        annotations:
+          editor.position: '{"x":40,"y":40,"width":180,"height":40}'
+      Select columns using Pandas on CSV data:
+        componentRef:
+          digest: 706a611997f9354fc9380747db7265a5a18b34ae7f3deadf29c9b994042fb511
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml
+        arguments:
+          table:
+            taskOutput:
+              outputName: Data
+              taskId: Download from GCS
+          column_names: '["tips", "trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]'
+        annotations:
+          editor.position: '{"x":40,"y":140,"width":180,"height":54}'
+      Binarize column using Pandas on CSV data:
+        componentRef:
+          digest: 14f3f351dc19a36c9ef03d8399883575e2ec631830e56382ca35c13ae5b84779
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml
+        arguments:
+          table:
+            taskOutput:
+              outputName: transformed_table
+              taskId: Select columns using Pandas on CSV data
+              type: CSV
+          column_name: tips
+          predicate: ' > 0'
+          new_column_name: class
+        annotations:
+          editor.position: '{"x":40,"y":250,"width":180,"height":54}'
+      Create fully connected tensorflow network:
+        componentRef:
+          digest: bfcafbc5ce711b1f69cabf1338212d10d50136a73db9f9f7c984de7b80b4bfb0
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/9ca0f9eecf5f896f65b8538bbd809747052617d1/components/tensorflow/Create_fully_connected_network/component.yaml
+        arguments:
+          input_size: '7'
+          hidden_layer_sizes: '[10]'
+          activation_name: elu
+          output_activation_name: sigmoid
+        annotations:
+          editor.position: '{"x":240,"y":250,"width":180,"height":54}'
+      Train model using Keras on CSV:
+        componentRef:
+          digest: 42ae60c889034dbad74815653e95b4f7d576b5f47f803173e8679c7b54984609
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/c504a4010348c50eaaf6d4337586ccc008f4dcef/components/tensorflow/Train_model_using_Keras/on_CSV/component.yaml
+        arguments:
+          training_data:
+            taskOutput:
+              outputName: transformed_table
+              taskId: Binarize column using Pandas on CSV data
+              type: CSV
+          model:
+            taskOutput:
+              outputName: model
+              taskId: Create fully connected tensorflow network
+              type: TensorflowSavedModel
+          label_column_name: class
+          loss_function_name: binary_crossentropy
+          number_of_epochs: '10'
+        annotations:
+          editor.position: '{"x":40,"y":380,"width":180,"height":54}'
+      Upload Tensorflow model to Google Cloud Vertex AI:
+        componentRef:
+          digest: d56fa60de311e41e8a50970330a5f23ea5c3c75f950ffa030714383dad971c5d
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/719783ef44c04348ea23e247a93021d91cfe602d/components/google-cloud/Vertex_AI/Models/Upload_Tensorflow_model/component.yaml
+        arguments:
+          model:
+            taskOutput:
+              outputName: trained_model
+              taskId: Train model using Keras on CSV
+              type: TensorflowSavedModel
+        annotations:
+          editor.position: '{"x":40,"y":510,"width":180,"height":54}'
+    outputValues: {}
