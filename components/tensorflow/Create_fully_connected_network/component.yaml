@@ -47,6 +47,8 @@ implementation:
           # The last layer is left without activation
           model.add(tf.keras.layers.Dense(units=output_size, activation=output_activation_name))
 
+          print(model.summary())
+
           # Using tf.keras.models.save_model instead of tf.saved_model.save to prevent downstream error:
           #tf.saved_model.save(model, model_path)
           # ValueError: Unable to create a Keras model from this SavedModel.
