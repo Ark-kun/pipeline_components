@@ -1,8 +1,10 @@
 from kfp.components import create_component_from_func, OutputPath
 
 def create_fully_connected_pytorch_network(
-    layer_sizes: list,
+    input_size: int,
     model_path: OutputPath('PyTorchScriptModule'),
+    hidden_layer_sizes: list = [],
+    output_size: int = 1,
     activation_name: str = 'relu',
     output_activation_name: str = None,
     random_seed: int = 0,
@@ -20,12 +22,17 @@ def create_fully_connected_pytorch_network(
             return activation(input)
 
     layers = []
-    for layer_idx in range(len(layer_sizes) - 1):
-        layer = torch.nn.Linear(layer_sizes[layer_idx], layer_sizes[layer_idx + 1])
+    prev_layer_size = input_size
+    for layer_size in hidden_layer_sizes:
+        layer = torch.nn.Linear(prev_layer_size, layer_size)
+        prev_layer_size = layer_size
         layers.append(layer)
-        if layer_idx < len(layer_sizes) - 2:
-            layers.append(ActivationLayer())
+        layers.append(ActivationLayer())
 
+    # Adding the output layer
+    layers.append(torch.nn.Linear(prev_layer_size, output_size))
+
+    # Adding the optional activation after the output layer
     if output_activation_name:
         output_activation = getattr(torch, output_activation_name, None) or getattr(torch.nn.functional, output_activation_name, None)
         class OutputActivationLayer(torch.nn.Module):

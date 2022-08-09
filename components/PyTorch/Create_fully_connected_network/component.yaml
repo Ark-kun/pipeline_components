@@ -3,7 +3,9 @@ description: Creates fully-connected network in PyTorch ScriptModule format
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/PyTorch/Create_fully_connected_network/component.yaml'}
 inputs:
-- {name: layer_sizes, type: JsonArray}
+- {name: input_size, type: Integer}
+- {name: hidden_layer_sizes, type: JsonArray, default: '[]', optional: true}
+- {name: output_size, type: Integer, default: '1', optional: true}
 - {name: activation_name, type: String, default: relu, optional: true}
 - {name: output_activation_name, type: String, optional: true}
 - {name: random_seed, type: Integer, default: '0', optional: true}
@@ -26,8 +28,10 @@ implementation:
           return file_path
 
       def create_fully_connected_pytorch_network(
-          layer_sizes,
+          input_size,
           model_path,
+          hidden_layer_sizes = [],
+          output_size = 1,
           activation_name = 'relu',
           output_activation_name = None,
           random_seed = 0,
@@ -45,12 +49,17 @@ implementation:
                   return activation(input)
 
           layers = []
-          for layer_idx in range(len(layer_sizes) - 1):
-              layer = torch.nn.Linear(layer_sizes[layer_idx], layer_sizes[layer_idx + 1])
+          prev_layer_size = input_size
+          for layer_size in hidden_layer_sizes:
+              layer = torch.nn.Linear(prev_layer_size, layer_size)
+              prev_layer_size = layer_size
               layers.append(layer)
-              if layer_idx < len(layer_sizes) - 2:
-                  layers.append(ActivationLayer())
+              layers.append(ActivationLayer())
 
+          # Adding the output layer
+          layers.append(torch.nn.Linear(prev_layer_size, output_size))
+
+          # Adding the optional activation after the output layer
           if output_activation_name:
               output_activation = getattr(torch, output_activation_name, None) or getattr(torch.nn.functional, output_activation_name, None)
               class OutputActivationLayer(torch.nn.Module):
@@ -66,7 +75,9 @@ implementation:
       import json
       import argparse
       _parser = argparse.ArgumentParser(prog='Create fully connected pytorch network', description='Creates fully-connected network in PyTorch ScriptModule format')
-      _parser.add_argument("--layer-sizes", dest="layer_sizes", type=json.loads, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--input-size", dest="input_size", type=int, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--hidden-layer-sizes", dest="hidden_layer_sizes", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--output-size", dest="output_size", type=int, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--activation-name", dest="activation_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--output-activation-name", dest="output_activation_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--random-seed", dest="random_seed", type=int, required=False, default=argparse.SUPPRESS)
@@ -75,8 +86,18 @@ implementation:
 
       _outputs = create_fully_connected_pytorch_network(**_parsed_args)
     args:
-    - --layer-sizes
-    - {inputValue: layer_sizes}
+    - --input-size
+    - {inputValue: input_size}
+    - if:
+        cond: {isPresent: hidden_layer_sizes}
+        then:
+        - --hidden-layer-sizes
+        - {inputValue: hidden_layer_sizes}
+    - if:
+        cond: {isPresent: output_size}
+        then:
+        - --output-size
+        - {inputValue: output_size}
     - if:
         cond: {isPresent: activation_name}
         then:
