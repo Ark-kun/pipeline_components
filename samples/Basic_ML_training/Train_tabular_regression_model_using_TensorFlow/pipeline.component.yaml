@@ -29,10 +29,11 @@ implementation:
           editor.position: '{"x":40,"y":140,"width":180,"height":54}'
       Create fully connected tensorflow network:
         componentRef:
-          digest: c97df1a0fe9b4d58300ffdf97dd63555cef1246ec93f9c68a0667dc8a99f1e1c
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/f3a9769d35a057c31a498e0667cae2e4a830c5b0/components/tensorflow/Create_fully_connected_network/component.yaml
+          digest: bfcafbc5ce711b1f69cabf1338212d10d50136a73db9f9f7c984de7b80b4bfb0
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/9ca0f9eecf5f896f65b8538bbd809747052617d1/components/tensorflow/Create_fully_connected_network/component.yaml
         arguments:
-          layer_sizes: '[7, 10, 1]'
+          input_size: '7'
+          hidden_layer_sizes: '[10]'
           activation_name: elu
         annotations:
           editor.position: '{"x":240,"y":140,"width":180,"height":54}'

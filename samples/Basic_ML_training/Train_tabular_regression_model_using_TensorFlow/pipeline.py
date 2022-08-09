@@ -3,7 +3,7 @@ from kfp import components
 # %% Loading components
 download_from_gcs_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/google-cloud/storage/download/component.yaml")
 select_columns_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml")
-create_fully_connected_tensorflow_network_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/f3a9769d35a057c31a498e0667cae2e4a830c5b0/components/tensorflow/Create_fully_connected_network/component.yaml")
+create_fully_connected_tensorflow_network_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/9ca0f9eecf5f896f65b8538bbd809747052617d1/components/tensorflow/Create_fully_connected_network/component.yaml")
 train_model_using_Keras_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/c504a4010348c50eaaf6d4337586ccc008f4dcef/components/tensorflow/Train_model_using_Keras/on_CSV/component.yaml")
 
 # %% Pipeline definition
@@ -23,9 +23,13 @@ def train_tabular_regression_model_using_Tensorflow_pipeline():
     ).outputs["transformed_table"]
 
     network = create_fully_connected_tensorflow_network_op(
-        layer_sizes=[len(feature_columns), 10, 1],
+        input_size=len(feature_columns),
+        # Optional:
+        hidden_layer_sizes=[10],
         activation_name="elu",
-    ).output
+        # output_activation_name=None,
+        # output_size=1,
+    ).outputs["model"]
 
     model = train_model_using_Keras_on_CSV_op(
         training_data=training_data,

@@ -44,10 +44,11 @@ implementation:
           editor.position: '{"x":40,"y":250,"width":180,"height":54}'
       Create fully connected tensorflow network:
         componentRef:
-          digest: 6b99db9baffa4e17b08c261e808c420b496a5d3ba6413d79fe4906772b6f86d9
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/6885e20e56de1e583c6101c42142be79ea7df363/components/tensorflow/Create_fully_connected_network/component.yaml
+          digest: bfcafbc5ce711b1f69cabf1338212d10d50136a73db9f9f7c984de7b80b4bfb0
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/9ca0f9eecf5f896f65b8538bbd809747052617d1/components/tensorflow/Create_fully_connected_network/component.yaml
         arguments:
-          layer_sizes: '[7, 10, 1]'
+          input_size: '7'
+          hidden_layer_sizes: '[10]'
           activation_name: elu
           output_activation_name: sigmoid
         annotations:
