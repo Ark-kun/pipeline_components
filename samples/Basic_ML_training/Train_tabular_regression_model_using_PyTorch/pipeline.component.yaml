@@ -29,10 +29,11 @@ implementation:
           editor.position: '{"x":240,"y":130,"width":180,"height":54}'
       Create fully connected pytorch network:
         componentRef:
-          digest: 9bb61a7cd7d3547d6f72d58127e24d84fb1e778e10f75fac272d3908592872ec
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/9a6218944f3d36529812d23e959690dd2b061102/components/PyTorch/Create_fully_connected_network/component.yaml
+          digest: d03d8248fd358a0275ec33568ee7dd7dce576cc112b09dfafe2651e4d97e04a9
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/1a2ef3eeb77bc278f33cad0dd29008ea2431e191/components/PyTorch/Create_fully_connected_network/component.yaml
         arguments:
-          layer_sizes: '[7, 10, 1]'
+          input_size: '7'
+          hidden_layer_sizes: '[10]'
           activation_name: elu
         annotations:
           editor.position: '{"x":40,"y":240,"width":180,"height":54}'
