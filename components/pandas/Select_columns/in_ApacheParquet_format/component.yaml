@@ -13,8 +13,9 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'pandas==1.4.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet
-      --no-warn-script-location 'pandas==1.4.1' --user) && "$0" "$@"
+      'pandas==1.4.1' 'pyarrow==9.0.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'pandas==1.4.1' 'pyarrow==9.0.0'
+      --user) && "$0" "$@"
     - sh
     - -ec
     - |
