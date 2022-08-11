@@ -41,16 +41,16 @@ def train_pytorch_model_from_csv(
 
     class CsvDataset(torch.utils.data.Dataset):
 
-        def __init__(self, file_path: str, label_column_name: str, drop_nan_clumns_or_rows: str = 'columns'):
+        def __init__(self, file_path: str, label_column_name: str, drop_nan_columns_or_rows: str = 'columns'):
             dataframe = pandas.read_csv(file_path)
             # Preventing error: default_collate: batch must contain tensors, numpy arrays, numbers, dicts or lists; found object
-            if drop_nan_clumns_or_rows == 'columns':
+            if drop_nan_columns_or_rows == 'columns':
                 non_nan_data = dataframe.dropna(axis='columns')
                 removed_columns = set(dataframe.columns) - set(non_nan_data.columns)
                 if removed_columns:
                     print('Skipping columns with NaNs: ' + str(removed_columns))
                 dataframe = non_nan_data
-            if drop_nan_clumns_or_rows == 'rows':
+            if drop_nan_columns_or_rows == 'rows':
                 non_nan_data = dataframe.dropna(axis='index')
                 number_of_removed_rows = len(dataframe) - len(non_nan_data)
                 if number_of_removed_rows:
