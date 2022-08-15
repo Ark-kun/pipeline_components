@@ -1,0 +1,179 @@
+name: Build IntegratedGradients explanation spec for Vertex AI
+description: Builds a IntegratedGradientsAttribution structure.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Explainability/Build_explanation_spec/IntegratedGradients/component.yaml'}
+inputs:
+- {name: explanation_metadata, type: JsonObject}
+- name: step_count
+  type: Integer
+  description: |-
+    The number of steps for approximating the path
+    integral. A good value to start is 50 and gradually increase
+    until the sum to diff property is within the desired error
+    range.
+  default: '50'
+  optional: true
+- {name: noise_sigma, type: Float, optional: true}
+- {name: noisy_sample_count, type: Integer, optional: true}
+- {name: max_blur_sigma, type: Float, optional: true}
+- {name: feature_noise_sigma, type: JsonObject, optional: true}
+- {name: top_k, type: Integer, optional: true}
+- {name: output_indices, type: JsonArray, optional: true}
+outputs:
+- {name: explanation_parameters, type: JsonObject}
+implementation:
+  container:
+    image: python:3.10
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def build_IntegratedGradients_explanation_spec_for_Vertex_AI(
+          explanation_metadata,  # google.cloud.aiplatform.explain.ExplanationMetadata
+          # IntegratedGradientsAttribution
+          step_count = 50,
+          # smooth_grad_config: "google.cloud.aiplatform_v1beta1.types.SmoothGradConfig",
+          noise_sigma = None,
+          # blur_baseline_config: "google.cloud.aiplatform_v1beta1.types.BlurBaselineConfig",
+          noisy_sample_count = None,
+          max_blur_sigma = None,
+          # feature_noise_sigma: "google.cloud.aiplatform_v1beta1.types.FeatureNoiseSigma",
+          feature_noise_sigma = None,
+          # Common parameters
+          top_k = None,
+          output_indices = None,
+      ):
+          """Builds a IntegratedGradientsAttribution structure.
+
+          IntegratedGradients is an attribution method that computes Aumann-Shapley values taking advantage of the model's fully differentiable structure.
+          Refer to this paper for more details: https://arxiv.org/abs/1703.01365
+
+          Args:
+              step_count: The number of steps for approximating the path
+                  integral. A good value to start is 50 and gradually increase
+                  until the sum to diff property is within the desired error
+                  range.
+          """
+          smooth_grad_config = {}
+          if noisy_sample_count:
+              smooth_grad_config["noisySampleCount"] = noisy_sample_count
+          if noise_sigma:
+              smooth_grad_config["noiseSigma"] = noise_sigma
+          if feature_noise_sigma:
+              smooth_grad_config["featureNoiseSigma"] = {
+                  "noiseSigma": [
+                      {"name": name, "sigma": sigma}
+                      for name, sigma in feature_noise_sigma.items()
+                  ]
+              }
+
+          integrated_gradients_attribution = {
+              "stepCount": step_count,
+          }
+          if max_blur_sigma:
+              integrated_gradients_attribution["blurBaselineConfig"] = {
+                  "maxBlurSigma": max_blur_sigma,
+              }
+          if smooth_grad_config:
+              integrated_gradients_attribution["smoothGradConfig"] = smooth_grad_config
+
+          explanation_parameters = {
+              "integratedGradientsAttribution": integrated_gradients_attribution,
+          }
+
+          if top_k:
+              explanation_parameters["topK"] = top_k
+          if output_indices:
+              explanation_parameters["outputIndices"] = output_indices
+
+          explanation_spec = {
+              "parameters": explanation_parameters,
+              "metadata": explanation_metadata,
+          }
+          return (explanation_spec,)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Build IntegratedGradients explanation spec for Vertex AI', description='Builds a IntegratedGradientsAttribution structure.')
+      _parser.add_argument("--explanation-metadata", dest="explanation_metadata", type=json.loads, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--step-count", dest="step_count", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--noise-sigma", dest="noise_sigma", type=float, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--noisy-sample-count", dest="noisy_sample_count", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--max-blur-sigma", dest="max_blur_sigma", type=float, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--feature-noise-sigma", dest="feature_noise_sigma", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--top-k", dest="top_k", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--output-indices", dest="output_indices", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = build_IntegratedGradients_explanation_spec_for_Vertex_AI(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --explanation-metadata
+    - {inputValue: explanation_metadata}
+    - if:
+        cond: {isPresent: step_count}
+        then:
+        - --step-count
+        - {inputValue: step_count}
+    - if:
+        cond: {isPresent: noise_sigma}
+        then:
+        - --noise-sigma
+        - {inputValue: noise_sigma}
+    - if:
+        cond: {isPresent: noisy_sample_count}
+        then:
+        - --noisy-sample-count
+        - {inputValue: noisy_sample_count}
+    - if:
+        cond: {isPresent: max_blur_sigma}
+        then:
+        - --max-blur-sigma
+        - {inputValue: max_blur_sigma}
+    - if:
+        cond: {isPresent: feature_noise_sigma}
+        then:
+        - --feature-noise-sigma
+        - {inputValue: feature_noise_sigma}
+    - if:
+        cond: {isPresent: top_k}
+        then:
+        - --top-k
+        - {inputValue: top_k}
+    - if:
+        cond: {isPresent: output_indices}
+        then:
+        - --output-indices
+        - {inputValue: output_indices}
+    - '----output-paths'
+    - {outputPath: explanation_parameters}

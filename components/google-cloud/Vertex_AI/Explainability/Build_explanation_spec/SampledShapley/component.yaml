@@ -1,0 +1,116 @@
+name: Build SampledShapley explanation spec for Vertex AI
+description: Builds a SampledShapleyAttribution structure.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Explainability/Build_explanation_spec/SampledShapley/component.yaml'}
+inputs:
+- {name: explanation_metadata, type: JsonObject}
+- name: path_count
+  type: Integer
+  description: |-
+    The number of feature permutations to consider
+    when approximating the Shapley values.
+    Valid range of its value is [1, 50], inclusively.
+- {name: top_k, type: Integer, optional: true}
+- {name: output_indices, type: JsonArray, optional: true}
+outputs:
+- {name: explanation_parameters, type: JsonObject}
+implementation:
+  container:
+    image: python:3.10
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def build_SampledShapley_explanation_spec_for_Vertex_AI(
+          explanation_metadata,  # google.cloud.aiplatform.explain.ExplanationMetadata
+          # SampledShapleyAttribution
+          path_count,
+          # Common parameters
+          top_k = None,
+          output_indices = None,
+      ):
+          """Builds a SampledShapleyAttribution structure.
+
+          SampledShapley is an attribution method that approximates Shapley values for features that contribute to the label being predicted.
+          A sampling strategy is used to approximate the value rather than considering all subsets of features.
+          Refer to this paper for model details: https://arxiv.org/abs/1306.4265.
+
+          Args:
+              path_count: The number of feature permutations to consider
+                  when approximating the Shapley values.
+                  Valid range of its value is [1, 50], inclusively.
+          """
+          explanation_parameters = {
+              "sampledShapleyAttribution": {
+                  "pathCount": path_count,
+              },
+          }
+          if top_k:
+              explanation_parameters["topK"] = top_k
+          if output_indices:
+              explanation_parameters["outputIndices"] = output_indices
+
+          explanation_spec = {
+              "parameters": explanation_parameters,
+              "metadata": explanation_metadata,
+          }
+          return (explanation_spec,)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Build SampledShapley explanation spec for Vertex AI', description='Builds a SampledShapleyAttribution structure.')
+      _parser.add_argument("--explanation-metadata", dest="explanation_metadata", type=json.loads, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--path-count", dest="path_count", type=int, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--top-k", dest="top_k", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--output-indices", dest="output_indices", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = build_SampledShapley_explanation_spec_for_Vertex_AI(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --explanation-metadata
+    - {inputValue: explanation_metadata}
+    - --path-count
+    - {inputValue: path_count}
+    - if:
+        cond: {isPresent: top_k}
+        then:
+        - --top-k
+        - {inputValue: top_k}
+    - if:
+        cond: {isPresent: output_indices}
+        then:
+        - --output-indices
+        - {inputValue: output_indices}
+    - '----output-paths'
+    - {outputPath: explanation_parameters}
