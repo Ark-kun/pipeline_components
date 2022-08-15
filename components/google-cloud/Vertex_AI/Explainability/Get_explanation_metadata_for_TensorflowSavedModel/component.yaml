@@ -1,0 +1,75 @@
+name: Get explanation metadata for TensorflowSavedModel
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Vertex_AI/Explainability/Get_explanation_metadata_for_TensorflowSavedModel/component.yaml'}
+inputs:
+- {name: model, type: TensorflowSavedModel}
+outputs:
+- {name: explanation_metadata, type: JsonObject}
+implementation:
+  container:
+    image: tensorflow/tensorflow:2.9.1
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'google-cloud-aiplatform==1.16.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform==1.16.1'
+      --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def get_explanation_metadata_for_TensorflowSavedModel(
+          model_path,
+      ):
+          from google.cloud.aiplatform.explain.metadata.tf.v2 import (
+              saved_model_metadata_builder,
+          )
+
+          explanation_metadata_builder = (
+              saved_model_metadata_builder.SavedModelMetadataBuilder(model_path=model_path)
+          )
+          explanation_metadata = explanation_metadata_builder.get_metadata()
+          return (explanation_metadata,)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Get explanation metadata for TensorflowSavedModel', description='')
+      _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = get_explanation_metadata_for_TensorflowSavedModel(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --model
+    - {inputPath: model}
+    - '----output-paths'
+    - {outputPath: explanation_metadata}
