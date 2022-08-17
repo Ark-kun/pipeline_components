@@ -1,0 +1,128 @@
+name: Convert column to categorical using Pandas on ApacheParquet data
+description: Changes column type to categorical.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/pandas/Convert_column_to_categorical/in_ApacheParquet_format/component.yaml'}
+inputs:
+- {name: table, type: ApacheParquet}
+- {name: column_name, type: String, description: Name of the column to convert}
+- name: categories
+  type: JsonArray
+  description: |-
+    A list of category names that should be used to map string values to indexes.
+    If omitted, the mapping will be automatically generated from the column unique values.
+  optional: true
+outputs:
+- {name: transformed_table, type: ApacheParquet}
+- {name: categories, type: JsonArray}
+implementation:
+  container:
+    image: python:3.9
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'pandas==1.4.3' 'pyarrow==9.0.0' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'pandas==1.4.3' 'pyarrow==9.0.0'
+      --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def _make_parent_dirs_and_return_path(file_path: str):
+          import os
+          os.makedirs(os.path.dirname(file_path), exist_ok=True)
+          return file_path
+
+      def convert_column_to_categorical_using_Pandas_on_ApacheParquet_data(
+          table_path,
+          transformed_table_path,
+          column_name,
+          categories = None,
+      ):
+          """Changes column type to categorical.
+
+          Args:
+              column_name: Name of the column to convert
+              categories: A list of category names that should be used to map string values to indexes.
+                  If omitted, the mapping will be automatically generated from the column unique values.
+          """
+          import pandas
+          from pandas.api.types import CategoricalDtype
+
+          df = pandas.read_parquet(path=table_path)
+
+          if not categories:
+              print("The explicit list of categories was not passed, so inferring it automatically:")
+              categories = sorted(df[column_name].dropna().unique())
+              print(categories)
+
+          categorical_type = CategoricalDtype(
+              categories=categories,
+              # ordered=True means that there is some number-like ordering for the categories.
+              # In this case there is no ordering. This is not the same as sorted category names.
+              ordered=False,
+          )
+          # Parquet supports the categorical column type natively.
+          df[column_name] = df[column_name].astype(categorical_type)
+
+          df.to_parquet(
+              path=transformed_table_path,
+              index=False,
+          )
+
+          return (categories,)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import json
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Convert column to categorical using Pandas on ApacheParquet data', description='Changes column type to categorical.')
+      _parser.add_argument("--table", dest="table_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--column-name", dest="column_name", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--categories", dest="categories", type=json.loads, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--transformed-table", dest="transformed_table_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = convert_column_to_categorical_using_Pandas_on_ApacheParquet_data(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --table
+    - {inputPath: table}
+    - --column-name
+    - {inputValue: column_name}
+    - if:
+        cond: {isPresent: categories}
+        then:
+        - --categories
+        - {inputValue: categories}
+    - --transformed-table
+    - {outputPath: transformed_table}
+    - '----output-paths'
+    - {outputPath: categories}
