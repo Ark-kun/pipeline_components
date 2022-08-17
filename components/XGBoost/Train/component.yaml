@@ -10,8 +10,6 @@ inputs:
     start from (in the binary XGBoost format)., optional: true}
 - {name: num_iterations, type: Integer, description: Number of boosting iterations.,
   default: '10', optional: true}
-- {name: booster_params, type: JsonObject, description: 'Parameters for the booster.
-    See https://xgboost.readthedocs.io/en/latest/parameter.html', optional: true}
 - name: objective
   type: String
   description: |-
@@ -45,6 +43,8 @@ inputs:
     0 indicates no limit on depth. Range: [0,Inf].
   default: '6'
   optional: true
+- {name: booster_params, type: JsonObject, description: 'Parameters for the booster.
+    See https://xgboost.readthedocs.io/en/latest/parameter.html', optional: true}
 outputs:
 - {name: model, type: XGBoostModel, description: Trained model in the binary XGBoost
     format.}
@@ -77,20 +77,17 @@ implementation:
           model_path,
           model_config_path,
           label_column_name,
-
           starting_model_path = None,
-
           num_iterations = 10,
-          booster_params = None,
-
           # Booster parameters
-          objective = 'reg:squarederror',
-          booster = 'gbtree',
+          objective = "reg:squarederror",
+          booster = "gbtree",
           learning_rate = 0.3,
           min_split_loss = 0,
           max_depth = 6,
+          booster_params = None,
       ):
-          '''Trains an XGBoost model.
+          """Trains an XGBoost model.
 
           Args:
               training_data_path: Training data in CSV format.
@@ -118,7 +115,7 @@ implementation:
 
           Annotations:
               author: Alexey Volkov <alexey.volkov@ark-kun.com>
-          '''
+          """
           import pandas
           import xgboost
 
@@ -132,11 +129,11 @@ implementation:
           )
 
           booster_params = booster_params or {}
-          booster_params.setdefault('objective', objective)
-          booster_params.setdefault('booster', booster)
-          booster_params.setdefault('learning_rate', learning_rate)
-          booster_params.setdefault('min_split_loss', min_split_loss)
-          booster_params.setdefault('max_depth', max_depth)
+          booster_params.setdefault("objective", objective)
+          booster_params.setdefault("booster", booster)
+          booster_params.setdefault("learning_rate", learning_rate)
+          booster_params.setdefault("min_split_loss", min_split_loss)
+          booster_params.setdefault("max_depth", max_depth)
 
           starting_model = None
           if starting_model_path:
@@ -146,14 +143,14 @@ implementation:
               params=booster_params,
               dtrain=training_data,
               num_boost_round=num_iterations,
-              xgb_model=starting_model
+              xgb_model=starting_model,
           )
 
           # Saving the model in binary format
           model.save_model(model_path)
 
           model_config_str = model.save_config()
-          with open(model_config_path, 'w') as model_config_file:
+          with open(model_config_path, "w") as model_config_file:
               model_config_file.write(model_config_str)
 
       import json
@@ -163,12 +160,12 @@ implementation:
       _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--starting-model", dest="starting_model_path", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--num-iterations", dest="num_iterations", type=int, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--booster-params", dest="booster_params", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--objective", dest="objective", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--booster", dest="booster", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--learning-rate", dest="learning_rate", type=float, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--min-split-loss", dest="min_split_loss", type=float, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--max-depth", dest="max_depth", type=int, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--booster-params", dest="booster_params", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--model", dest="model_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--model-config", dest="model_config_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parsed_args = vars(_parser.parse_args())
@@ -189,11 +186,6 @@ implementation:
         then:
         - --num-iterations
         - {inputValue: num_iterations}
-    - if:
-        cond: {isPresent: booster_params}
-        then:
-        - --booster-params
-        - {inputValue: booster_params}
     - if:
         cond: {isPresent: objective}
         then:
@@ -219,6 +211,11 @@ implementation:
         then:
         - --max-depth
         - {inputValue: max_depth}
+    - if:
+        cond: {isPresent: booster_params}
+        then:
+        - --booster-params
+        - {inputValue: booster_params}
     - --model
     - {outputPath: model}
     - --model-config

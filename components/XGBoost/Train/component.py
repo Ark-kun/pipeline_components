@@ -1,24 +1,22 @@
 from kfp.components import InputPath, OutputPath, create_component_from_func
 
+
 def xgboost_train(
-    training_data_path: InputPath('CSV'),
-    model_path: OutputPath('XGBoostModel'),
-    model_config_path: OutputPath('XGBoostModelConfig'),
+    training_data_path: InputPath("CSV"),
+    model_path: OutputPath("XGBoostModel"),
+    model_config_path: OutputPath("XGBoostModelConfig"),
     label_column_name: str,
-
-    starting_model_path: InputPath('XGBoostModel') = None,
-
+    starting_model_path: InputPath("XGBoostModel") = None,
     num_iterations: int = 10,
-    booster_params: dict = None,
-
     # Booster parameters
-    objective: str = 'reg:squarederror',
-    booster: str = 'gbtree',
+    objective: str = "reg:squarederror",
+    booster: str = "gbtree",
     learning_rate: float = 0.3,
     min_split_loss: float = 0,
     max_depth: int = 6,
+    booster_params: dict = None,
 ):
-    '''Trains an XGBoost model.
+    """Trains an XGBoost model.
 
     Args:
         training_data_path: Training data in CSV format.
@@ -46,7 +44,7 @@ def xgboost_train(
 
     Annotations:
         author: Alexey Volkov <alexey.volkov@ark-kun.com>
-    '''
+    """
     import pandas
     import xgboost
 
@@ -60,11 +58,11 @@ def xgboost_train(
     )
 
     booster_params = booster_params or {}
-    booster_params.setdefault('objective', objective)
-    booster_params.setdefault('booster', booster)
-    booster_params.setdefault('learning_rate', learning_rate)
-    booster_params.setdefault('min_split_loss', min_split_loss)
-    booster_params.setdefault('max_depth', max_depth)
+    booster_params.setdefault("objective", objective)
+    booster_params.setdefault("booster", booster)
+    booster_params.setdefault("learning_rate", learning_rate)
+    booster_params.setdefault("min_split_loss", min_split_loss)
+    booster_params.setdefault("max_depth", max_depth)
 
     starting_model = None
     if starting_model_path:
@@ -74,25 +72,25 @@ def xgboost_train(
         params=booster_params,
         dtrain=training_data,
         num_boost_round=num_iterations,
-        xgb_model=starting_model
+        xgb_model=starting_model,
     )
 
     # Saving the model in binary format
     model.save_model(model_path)
 
     model_config_str = model.save_config()
-    with open(model_config_path, 'w') as model_config_file:
+    with open(model_config_path, "w") as model_config_file:
         model_config_file.write(model_config_str)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     create_component_from_func(
         xgboost_train,
-        output_component_file='component.yaml',
-        base_image='python:3.7',
+        output_component_file="component.yaml",
+        base_image="python:3.7",
         packages_to_install=[
-            'xgboost==1.1.1',
-            'pandas==1.0.5',
+            "xgboost==1.1.1",
+            "pandas==1.0.5",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

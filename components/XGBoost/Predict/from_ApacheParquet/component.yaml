@@ -37,7 +37,7 @@ implementation:
           predictions_path,
           label_column_name = None,
       ):
-          '''Makes predictions using a trained XGBoost model.
+          """Makes predictions using a trained XGBoost model.
 
           Args:
               data_path: Feature data in Apache Parquet format.
@@ -47,7 +47,7 @@ implementation:
 
           Annotations:
               author: Alexey Volkov <alexey.volkov@ark-kun.com>
-          '''
+          """
           from pathlib import Path
 
           import numpy
