@@ -11,14 +11,14 @@ outputs:
 - {name: predictions, type: Text, description: Model predictions.}
 implementation:
   container:
-    image: python:3.7
+    image: python:3.10
     command:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'xgboost==1.1.1' 'pandas==1.0.5' 'pyarrow==0.17.1' || PIP_DISABLE_PIP_VERSION_CHECK=1
-      python3 -m pip install --quiet --no-warn-script-location 'xgboost==1.1.1' 'pandas==1.0.5'
-      'pyarrow==0.17.1' --user) && "$0" "$@"
+      'xgboost==1.6.1' 'pandas==1.4.3' 'pyarrow==9.0.0' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'xgboost==1.6.1' 'pandas==1.4.3'
+      'pyarrow==9.0.0' --user) && "$0" "$@"
     - sh
     - -ec
     - |

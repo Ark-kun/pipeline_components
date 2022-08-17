@@ -87,10 +87,10 @@ if __name__ == "__main__":
     create_component_from_func(
         xgboost_train,
         output_component_file="component.yaml",
-        base_image="python:3.7",
+        base_image="python:3.10",
         packages_to_install=[
-            "xgboost==1.1.1",
-            "pandas==1.0.5",
+            "xgboost==1.6.1",
+            "pandas==1.4.3",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
