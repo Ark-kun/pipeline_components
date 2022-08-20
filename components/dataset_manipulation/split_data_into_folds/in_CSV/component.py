@@ -48,6 +48,7 @@ def split_table_into_folds(
 
     df = pandas.read_csv(
         table_path,
+        dtype="string",
     )
     splitter = model_selection.KFold(
         n_splits=number_of_folds,

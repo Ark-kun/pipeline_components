@@ -8,7 +8,10 @@ def select_columns_using_Pandas_on_CSV_data(
 ):
     import pandas
 
-    df = pandas.read_csv(table_path)
+    df = pandas.read_csv(
+        table_path,
+        dtype="string",
+    )
     df = df[column_names]
     df.to_csv(transformed_table_path, index=False)
 

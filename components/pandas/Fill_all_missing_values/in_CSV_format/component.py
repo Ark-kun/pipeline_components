@@ -13,7 +13,10 @@ def fill_all_missing_values_using_Pandas_on_CSV_data(
     replacement_type = getattr(builtins, replacement_type_name)
     replacement_value = replacement_type(replacement_value)
 
-    df = pandas.read_csv(table_path)
+    df = pandas.read_csv(
+        table_path,
+        dtype="string",
+    )
     df = df.fillna(value=replacement_value)
     df.to_csv(
         transformed_table_path, index=False,

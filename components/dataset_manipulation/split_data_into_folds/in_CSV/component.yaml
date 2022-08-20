@@ -47,9 +47,12 @@ implementation:
       'scikit-learn==0.23.1' 'pandas==1.0.5' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
       -m pip install --quiet --no-warn-script-location 'scikit-learn==0.23.1' 'pandas==1.0.5'
       --user) && "$0" "$@"
-    - python3
-    - -u
-    - -c
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
     - |
       def _make_parent_dirs_and_return_path(file_path: str):
           import os
@@ -104,6 +107,7 @@ implementation:
 
           df = pandas.read_csv(
               table_path,
+              dtype="string",
           )
           splitter = model_selection.KFold(
               n_splits=number_of_folds,
@@ -133,7 +137,7 @@ implementation:
               test_fold.to_csv(test_path, index=False)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Split table into folds', description='Splits the data table into the specified number of folds.\n\n    The data is split into the specified number of folds k (default: 5).\n    Each testing subsample has 1/k fraction of samples. The testing subsamples do not overlap.\n    Each training subsample has (k-1)/k fraction of samples.\n    The train_i subsample is produced by excluding test_i subsample form all samples.\n\n    Inputs:\n        table: The data to split by rows\n        number_of_folds: Number of folds to split data into\n        random_seed: Random seed for reproducible splitting\n\n    Outputs:\n        train_i: The i-th training subsample\n        test_i: The i-th testing subsample\n\n    Annotations:\n        author: Alexey Volkov <alexey.volkov@ark-kun.com>')
+      _parser = argparse.ArgumentParser(prog='Split table into folds', description='Splits the data table into the specified number of folds.')
       _parser.add_argument("--table", dest="table_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--number-of-folds", dest="number_of_folds", type=int, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--random-seed", dest="random_seed", type=int, required=False, default=argparse.SUPPRESS)

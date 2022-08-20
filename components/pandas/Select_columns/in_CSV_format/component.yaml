@@ -34,7 +34,10 @@ implementation:
       ):
           import pandas
 
-          df = pandas.read_csv(table_path)
+          df = pandas.read_csv(
+              table_path,
+              dtype="string",
+          )
           df = df[column_names]
           df.to_csv(transformed_table_path, index=False)
 
