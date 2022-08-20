@@ -26,7 +26,7 @@ def xgboost_predict(
 
     df = pandas.read_csv(
         data_path,
-    )
+    ).convert_dtypes()
 
     if label_column_name is not None:
         df = df.drop(columns=[label_column_name])

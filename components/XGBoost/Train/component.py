@@ -50,7 +50,7 @@ def xgboost_train(
 
     df = pandas.read_csv(
         training_data_path,
-    )
+    ).convert_dtypes()
 
     training_data = xgboost.DMatrix(
         data=df.drop(columns=[label_column_name]),

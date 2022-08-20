@@ -10,7 +10,7 @@ def train_linear_regression_model_using_scikit_learn_from_CSV(
     import pickle
     from sklearn import linear_model
 
-    df = pandas.read_csv(dataset_path)
+    df = pandas.read_csv(dataset_path).convert_dtypes()
     model = linear_model.LinearRegression()
     model.fit(
         X=df.drop(columns=label_column_name),
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         base_image="python:3.9",
         packages_to_install=[
             "scikit-learn==1.0.2",
-            "pandas==1.4.1",
+            "pandas==1.4.3",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

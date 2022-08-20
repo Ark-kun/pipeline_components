@@ -31,7 +31,7 @@ def train_model_using_scikit_learn_from_CSV(
 
     numpy.random.seed(random_seed)
     model = model_class(**model_parameters)
-    df = pandas.read_csv(dataset_path)
+    df = pandas.read_csv(dataset_path).convert_dtypes()
     model.fit(
         X=df.drop(columns=label_column_name),
         y=df[label_column_name],
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     train_model_using_scikit_learn_from_CSV_op = create_component_from_func(
         func=train_model_using_scikit_learn_from_CSV,
         base_image="python:3.9",
-        packages_to_install=["scikit-learn==1.0.2", "pandas==1.4.1",],
+        packages_to_install=["scikit-learn==1.0.2", "pandas==1.4.3",],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
             "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml",

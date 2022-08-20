@@ -26,7 +26,7 @@ def Pandas_Transform_DataFrame_in_CSV_format(
 
     df = pandas.read_csv(
         table_path,
-    )
+    ).convert_dtypes()
     # The namespace is needed so that the code can replace `df`. For example df = df[['X']]
     namespace = locals()
     exec(transform_code, namespace)
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         output_component_file='component.yaml',
         base_image='python:3.7',
         packages_to_install=[
-            'pandas==1.0.4',
+            'pandas==1.4.3',
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

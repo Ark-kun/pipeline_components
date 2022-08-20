@@ -9,7 +9,7 @@ def create_Vowpal_Wabbit_JSON_dataset_from_CSV(
     import json
     import pandas
 
-    df = pandas.read_csv(dataset_path)
+    df = pandas.read_csv(dataset_path).convert_dtypes()
 
     if label_column_name:
         label_series = df[label_column_name]
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     create_Vowpal_Wabbit_JSON_dataset_from_CSV_op = create_component_from_func(
         func=create_Vowpal_Wabbit_JSON_dataset_from_CSV,
         base_image="python:3.9",
-        packages_to_install=["pandas==1.4.1",],
+        packages_to_install=["pandas==1.4.3",],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
             "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Vowpal_Wabbit/Create_JSON_dataset/from_CSV/component.yaml",

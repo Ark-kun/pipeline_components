@@ -21,8 +21,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'scikit-learn==1.0.2' 'pandas==1.4.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
-      -m pip install --quiet --no-warn-script-location 'scikit-learn==1.0.2' 'pandas==1.4.1'
+      'scikit-learn==1.0.2' 'pandas==1.4.3' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'scikit-learn==1.0.2' 'pandas==1.4.3'
       --user) && "$0" "$@"
     - sh
     - -ec
@@ -66,7 +66,7 @@ implementation:
 
           numpy.random.seed(random_seed)
           model = model_class(**model_parameters)
-          df = pandas.read_csv(dataset_path)
+          df = pandas.read_csv(dataset_path).convert_dtypes()
           model.fit(
               X=df.drop(columns=label_column_name),
               y=df[label_column_name],

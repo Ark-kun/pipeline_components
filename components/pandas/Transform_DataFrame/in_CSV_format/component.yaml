@@ -32,8 +32,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'pandas==1.0.4' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet
-      --no-warn-script-location 'pandas==1.0.4' --user) && "$0" "$@"
+      'pandas==1.4.3' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet
+      --no-warn-script-location 'pandas==1.4.3' --user) && "$0" "$@"
     - python3
     - -u
     - -c
@@ -69,7 +69,7 @@ implementation:
 
           df = pandas.read_csv(
               table_path,
-          )
+          ).convert_dtypes()
           # The namespace is needed so that the code can replace `df`. For example df = df[['X']]
           namespace = locals()
           exec(transform_code, namespace)

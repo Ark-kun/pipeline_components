@@ -10,7 +10,7 @@ def create_Vowpal_Wabbit_dataset_from_CSV(
     import pandas
     from vowpalwabbit import dftovw
 
-    df = pandas.read_csv(dataset_path)
+    df = pandas.read_csv(dataset_path).convert_dtypes()
     # Hidden feature: Can pass multiple column names as comma-separated string.
     if label_column_name:
         label_columns = label_column_name.split(",")
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         base_image="python:3.9",
         packages_to_install=[
             "vowpalwabbit==9.0.1",
-            "pandas==1.4.1",  # Not installed by vowpalwabbit despite its requirements.txt
+            "pandas==1.4.3",  # Not installed by vowpalwabbit despite its requirements.txt
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

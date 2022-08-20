@@ -33,8 +33,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'keras==2.3.1' 'pandas==1.0.5' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
-      pip install --quiet --no-warn-script-location 'keras==2.3.1' 'pandas==1.0.5'
+      'keras==2.3.1' 'pandas==1.4.3' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m
+      pip install --quiet --no-warn-script-location 'keras==2.3.1' 'pandas==1.4.3'
       --user) && "$0" "$@"
     - python3
     - -u
@@ -75,8 +75,8 @@ implementation:
           tensorflow.random.set_seed(random_seed)
           numpy.random.seed(random_seed)
 
-          training_features_df = pandas.read_csv(training_features_path)
-          training_labels_df = pandas.read_csv(training_labels_path)
+          training_features_df = pandas.read_csv(training_features_path).convert_dtypes()
+          training_labels_df = pandas.read_csv(training_labels_path).convert_dtypes()
 
           x_train = training_features_df.to_numpy()
           y_train_labels = training_labels_df.to_numpy()

@@ -35,8 +35,8 @@ def keras_train_classifier_from_csv(
     tensorflow.random.set_seed(random_seed)
     numpy.random.seed(random_seed)
 
-    training_features_df = pandas.read_csv(training_features_path)
-    training_labels_df = pandas.read_csv(training_labels_path)
+    training_features_df = pandas.read_csv(training_features_path).convert_dtypes()
+    training_labels_df = pandas.read_csv(training_labels_path).convert_dtypes()
 
     x_train = training_features_df.to_numpy()
     y_train_labels = training_labels_df.to_numpy()
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     keras_train_classifier_from_csv_op = create_component_from_func(
         keras_train_classifier_from_csv,
         base_image='tensorflow/tensorflow:2.2.0',
-        packages_to_install=['keras==2.3.1', 'pandas==1.0.5'],
+        packages_to_install=['keras==2.3.1', 'pandas==1.4.3'],
         output_component_file='component.yaml',
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

@@ -18,7 +18,7 @@ def convert_column_to_categorical_using_Pandas_on_CSV_data(
     import pandas
     from pandas.api.types import CategoricalDtype
 
-    df = pandas.read_csv(table_path)
+    df = pandas.read_csv(table_path).convert_dtypes()
 
     if not categories:
         print("The explicit list of categories was not passed, so inferring it automatically:")
