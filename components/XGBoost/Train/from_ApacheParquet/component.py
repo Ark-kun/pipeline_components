@@ -53,6 +53,7 @@ def xgboost_train(
     training_data = xgboost.DMatrix(
         data=df.drop(columns=[label_column_name]),
         label=df[[label_column_name]],
+        enable_categorical=True,
     )
     # Training
     booster_params = booster_params or {}
