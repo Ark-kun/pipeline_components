@@ -53,6 +53,14 @@ def xgboost_train(
     ).convert_dtypes()
     print("Training data information:")
     df.info(verbose=True)
+    # Converting column types that XGBoost does not support
+    for column_name, dtype in df.dtypes.items():
+        if dtype in ["string", "object"]:
+            print(f"Treating the {dtype.name} column '{column_name}' as categorical.")
+            df[column_name] = df[column_name].astype("category")
+            print(f"Inferred {len(df[column_name].cat.categories)} categories for the '{column_name}' column.")
+    print("Final training data information:")
+    df.info(verbose=True)
 
     training_data = xgboost.DMatrix(
         data=df.drop(columns=[label_column_name]),
