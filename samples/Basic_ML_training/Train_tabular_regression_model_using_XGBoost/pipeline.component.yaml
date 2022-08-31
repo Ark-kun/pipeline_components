@@ -17,8 +17,8 @@ implementation:
           editor.position: '{"x":40,"y":40,"width":180,"height":40}'
       Select columns using Pandas on CSV data:
         componentRef:
-          digest: 706a611997f9354fc9380747db7265a5a18b34ae7f3deadf29c9b994042fb511
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml
+          digest: 9b9500f461c1d04f1e48992de9138db14a6800f23649d73048673d5ea6dc56ad
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/8c78aae096806cff3bc331a40566f42f5c3e9d4b/components/pandas/Select_columns/in_CSV_format/component.yaml
         arguments:
           table:
             taskOutput:
@@ -27,10 +27,10 @@ implementation:
           column_names: '["tips", "trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]'
         annotations:
           editor.position: '{"x":40,"y":120,"width":180,"height":54}'
-      Xgboost train:
+      Train XGBoost model on CSV:
         componentRef:
-          digest: 7bbc658a62274525c7371211e78e54edfdc70326987d410d2a57f8213ec7ea34
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Train/component.yaml
+          digest: 538c5a01eb38deaf532d619f0bbeaff4efc550fe1f0f776fc06791097b68ceac
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/58d3a47f904f32a64af8403330ba7e2134cae46d/components/XGBoost/Train/component.yaml
         arguments:
           training_data:
             taskOutput:
@@ -40,10 +40,10 @@ implementation:
           label_column_name: tips
         annotations:
           editor.position: '{"x":140,"y":250,"width":180,"height":40}'
-      Xgboost predict:
+      Xgboost predict on CSV:
         componentRef:
-          digest: 9fba0413388c06509e054282a4396c8ebc30877b545644c8888a94d750f6122a
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Predict/component.yaml
+          digest: 0876233a0c7306fefec188bd70f059b46d1fb5aa57be231799570e3bbbdd0d95
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/4694ec97baccf59284c2a1db4aa2250c22291eab/components/XGBoost/Predict/component.yaml
         arguments:
           data:
             taskOutput:
@@ -53,7 +53,7 @@ implementation:
           model:
             taskOutput:
               outputName: model
-              taskId: Xgboost train
+              taskId: Train XGBoost model on CSV
               type: XGBoostModel
           label_column_name: tips
         annotations:

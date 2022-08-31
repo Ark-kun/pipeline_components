@@ -3,10 +3,9 @@ from kfp import components
 
 # %% Loading components
 download_from_gcs_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/google-cloud/storage/download/component.yaml")
-select_columns_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml")
-binarize_column_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml")
-xgboost_train_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Train/component.yaml")
-xgboost_predict_on_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/37ee92778e27f9dbe3e1c1b3b25b77cd01da84dc/components/XGBoost/Predict/component.yaml")
+select_columns_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/8c78aae096806cff3bc331a40566f42f5c3e9d4b/components/pandas/Select_columns/in_CSV_format/component.yaml")
+train_XGBoost_model_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/58d3a47f904f32a64af8403330ba7e2134cae46d/components/XGBoost/Train/component.yaml")
+xgboost_predict_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/4694ec97baccf59284c2a1db4aa2250c22291eab/components/XGBoost/Predict/component.yaml")
 
 # %% Pipeline definition
 def train_tabular_regression_model_using_XGBoost_pipeline():
@@ -24,7 +23,7 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
         column_names=all_columns,
     ).outputs["transformed_table"]
 
-    model = xgboost_train_on_csv_op(
+    model = train_XGBoost_model_on_CSV_op(
         training_data=training_data,
         label_column_name=label_column,
         # Optional:
@@ -39,7 +38,7 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
     ).outputs["model"]
 
     # Predicting on the training data
-    predictions = xgboost_predict_on_csv_op(
+    predictions = xgboost_predict_on_CSV_op(
         data=training_data,
         model=model,
         # label_column needs to be set when doing prediction on a dataset that has labels
