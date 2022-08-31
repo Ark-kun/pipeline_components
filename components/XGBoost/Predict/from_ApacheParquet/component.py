@@ -26,6 +26,9 @@ def xgboost_predict(
 
     # Loading data
     df = pandas.read_parquet(data_path)
+    print("Evaluation data information:")
+    df.info(verbose=True)
+
     if label_column_name:
         df = df.drop(columns=[label_column_name])
 
