@@ -62,6 +62,7 @@ def train_XGBoost_model_on_ApacheParquet(
         if pandas.api.types.is_float_dtype(dtype):
             # Converting from "Float64" to "float64"
             df[column_name] = df[column_name].astype(dtype.name.lower())
+    print()
     print("Final training data information:")
     df.info(verbose=True)
 
@@ -82,6 +83,8 @@ def train_XGBoost_model_on_ApacheParquet(
     if starting_model_path:
         starting_model = xgboost.Booster(model_file=starting_model_path)
 
+    print()
+    print("Training the model:")
     model = xgboost.train(
         params=booster_params,
         dtrain=training_data,
