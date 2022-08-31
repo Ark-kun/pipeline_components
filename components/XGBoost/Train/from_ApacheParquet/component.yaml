@@ -122,6 +122,9 @@ implementation:
 
           # Loading data
           df = pandas.read_parquet(training_data_path)
+          print("Training data information:")
+          df.info(verbose=True)
+
           training_data = xgboost.DMatrix(
               data=df.drop(columns=[label_column_name]),
               label=df[[label_column_name]],
