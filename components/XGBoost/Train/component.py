@@ -88,6 +88,7 @@ def train_XGBoost_model_on_CSV(
         dtrain=training_data,
         num_boost_round=num_iterations,
         xgb_model=starting_model,
+        evals=[(training_data, "training_data")],
     )
 
     # Saving the model in binary format
