@@ -35,6 +35,7 @@ def xgboost_predict(
 
     testing_data = xgboost.DMatrix(
         data=df,
+        enable_categorical=True,
     )
 
     model = xgboost.Booster(model_file=model_path)

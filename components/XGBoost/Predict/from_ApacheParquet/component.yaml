@@ -64,6 +64,7 @@ implementation:
 
           evaluation_data = xgboost.DMatrix(
               data=df,
+              enable_categorical=True,
           )
 
           # Training

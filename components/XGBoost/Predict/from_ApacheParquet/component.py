@@ -34,6 +34,7 @@ def xgboost_predict(
 
     evaluation_data = xgboost.DMatrix(
         data=df,
+        enable_categorical=True,
     )
 
     # Training
