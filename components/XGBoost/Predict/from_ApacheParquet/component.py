@@ -1,7 +1,7 @@
 from kfp.components import InputPath, OutputPath, create_component_from_func
 
 
-def xgboost_predict(
+def xgboost_predict_on_ApacheParquet(
     data_path: InputPath("ApacheParquet"),
     model_path: InputPath("XGBoostModel"),
     predictions_path: OutputPath("Text"),
@@ -59,8 +59,8 @@ def xgboost_predict(
 
 
 if __name__ == "__main__":
-    create_component_from_func(
-        xgboost_predict,
+    xgboost_predict_on_ApacheParquet_op = create_component_from_func(
+        xgboost_predict_on_ApacheParquet,
         output_component_file="component.yaml",
         base_image="python:3.10",
         packages_to_install=[

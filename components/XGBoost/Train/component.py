@@ -1,7 +1,7 @@
 from kfp.components import InputPath, OutputPath, create_component_from_func
 
 
-def xgboost_train(
+def train_XGBoost_model_on_CSV(
     training_data_path: InputPath("CSV"),
     model_path: OutputPath("XGBoostModel"),
     model_config_path: OutputPath("XGBoostModelConfig"),
@@ -99,8 +99,8 @@ def xgboost_train(
 
 
 if __name__ == "__main__":
-    create_component_from_func(
-        xgboost_train,
+    train_XGBoost_model_on_CSV_op = create_component_from_func(
+        train_XGBoost_model_on_CSV,
         output_component_file="component.yaml",
         base_image="python:3.10",
         packages_to_install=[

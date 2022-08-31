@@ -1,4 +1,4 @@
-name: Xgboost predict
+name: Xgboost predict on ApacheParquet
 description: Makes predictions using a trained XGBoost model.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/XGBoost/Predict/from_ApacheParquet/component.yaml'}
@@ -31,7 +31,7 @@ implementation:
           os.makedirs(os.path.dirname(file_path), exist_ok=True)
           return file_path
 
-      def xgboost_predict(
+      def xgboost_predict_on_ApacheParquet(
           data_path,
           model_path,
           predictions_path,
@@ -88,14 +88,14 @@ implementation:
           numpy.savetxt(predictions_path, predictions)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Xgboost predict', description='Makes predictions using a trained XGBoost model.')
+      _parser = argparse.ArgumentParser(prog='Xgboost predict on ApacheParquet', description='Makes predictions using a trained XGBoost model.')
       _parser.add_argument("--data", dest="data_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--model", dest="model_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--predictions", dest="predictions_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parsed_args = vars(_parser.parse_args())
 
-      _outputs = xgboost_predict(**_parsed_args)
+      _outputs = xgboost_predict_on_ApacheParquet(**_parsed_args)
     args:
     - --data
     - {inputPath: data}
