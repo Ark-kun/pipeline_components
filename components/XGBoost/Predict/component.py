@@ -35,6 +35,10 @@ def xgboost_predict(
             print(f"Treating the {dtype.name} column '{column_name}' as categorical.")
             df[column_name] = df[column_name].astype("category")
             print(f"Inferred {len(df[column_name].cat.categories)} categories for the '{column_name}' column.")
+        # Working around the XGBoost issue with nullable floats: https://github.com/dmlc/xgboost/issues/8213
+        if pandas.api.types.is_float_dtype(dtype):
+            # Converting from "Float64" to "float64"
+            df[column_name] = df[column_name].astype(dtype.name.lower())
     print("Final evaluation data information:")
     df.info(verbose=True)
 
