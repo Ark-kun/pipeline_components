@@ -5,6 +5,7 @@ from kfp import components
 download_from_gcs_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/27a5ea25e849c9e8c0cb6ed65518bc3ece259aaf/components/google-cloud/storage/download/workaround_for_buggy_KFPv2_compiler/component.yaml")
 select_columns_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/8c78aae096806cff3bc331a40566f42f5c3e9d4b/components/pandas/Select_columns/in_CSV_format/component.yaml")
 binarize_column_using_Pandas_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/1e2558325f4c708aca75827c8acc13d230ee7e9f/components/pandas/Binarize_column/in_CSV_format/component.yaml")
+split_rows_into_subsets_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/daae5a4abaa35e44501818b1534ed7827d7da073/components/dataset_manipulation/Split_rows_into_subsets/in_CSV/component.yaml")
 train_XGBoost_model_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/58d3a47f904f32a64af8403330ba7e2134cae46d/components/XGBoost/Train/component.yaml")
 xgboost_predict_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/4694ec97baccf59284c2a1db4aa2250c22291eab/components/XGBoost/Predict/component.yaml")
 upload_XGBoost_model_to_Google_Cloud_Vertex_AI_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/c6a8b67d1ada2cc17665c99ff6b410df588bee28/components/google-cloud/Vertex_AI/Models/Upload_XGBoost_model/workaround_for_buggy_KFPv2_compiler/component.yaml")
@@ -16,21 +17,28 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
     label_column = "tips"
     all_columns = [label_column] + feature_columns
 
-    training_data = download_from_gcs_op(
+    dataset = download_from_gcs_op(
         gcs_path=dataset_gcs_uri
     ).outputs["Data"]
 
-    training_data = select_columns_using_Pandas_on_CSV_data_op(
-        table=training_data,
+    dataset = select_columns_using_Pandas_on_CSV_data_op(
+        table=dataset,
         column_names=all_columns,
     ).outputs["transformed_table"]
 
-    classification_training_data = binarize_column_using_Pandas_on_CSV_data_op(
-        table=training_data,
+    classification_dataset = binarize_column_using_Pandas_on_CSV_data_op(
+        table=dataset,
         column_name=label_column,
         predicate="> 0",
         new_column_name="class",
     ).outputs["transformed_table"]
+
+    split_task = split_rows_into_subsets_op(
+        table=classification_dataset,
+        fraction_1=0.7,
+    )
+    classification_training_data = split_task.outputs["split_1"]
+    classification_testing_data = split_task.outputs["split_2"]
 
     model = train_XGBoost_model_on_CSV_op(
         training_data=classification_training_data,
@@ -46,9 +54,9 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
         #max_depth=6,
     ).outputs["model"]
 
-    # Predicting on the training data
+    # Predicting on the testing data
     predictions = xgboost_predict_on_CSV_op(
-        data=classification_training_data,
+        data=classification_testing_data,
         model=model,
         # label_column needs to be set when doing prediction on a dataset that has labels
         label_column_name=label_column,

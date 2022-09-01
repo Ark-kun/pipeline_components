@@ -42,6 +42,19 @@ implementation:
           new_column_name: class
         annotations:
           editor.position: '{"x":40,"y":250,"width":180,"height":54}'
+      Split rows into subsets:
+        componentRef:
+          digest: a609c3c9196484290f24a1174955f95b27f07a7b458aa5cb8cde28866cb2cb46
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/daae5a4abaa35e44501818b1534ed7827d7da073/components/dataset_manipulation/Split_rows_into_subsets/in_CSV/component.yaml
+        arguments:
+          table:
+            taskOutput:
+              outputName: transformed_table
+              taskId: Binarize column using Pandas on CSV data
+              type: CSV
+          fraction_1: '0.7'
+        annotations:
+          editor.position: '{"x":170,"y":380,"width":180,"height":40}'
       Train XGBoost model on CSV:
         componentRef:
           digest: 538c5a01eb38deaf532d619f0bbeaff4efc550fe1f0f776fc06791097b68ceac
@@ -49,13 +62,13 @@ implementation:
         arguments:
           training_data:
             taskOutput:
-              outputName: transformed_table
-              taskId: Binarize column using Pandas on CSV data
+              outputName: split_1
+              taskId: Split rows into subsets
               type: CSV
           label_column_name: tips
           objective: binary:logistic
         annotations:
-          editor.position: '{"x":140,"y":360,"width":180,"height":40}'
+          editor.position: '{"x":40,"y":500,"width":180,"height":40}'
       Xgboost predict on CSV:
         componentRef:
           digest: 0876233a0c7306fefec188bd70f059b46d1fb5aa57be231799570e3bbbdd0d95
@@ -63,8 +76,8 @@ implementation:
         arguments:
           data:
             taskOutput:
-              outputName: transformed_table
-              taskId: Binarize column using Pandas on CSV data
+              outputName: split_2
+              taskId: Split rows into subsets
               type: CSV
           model:
             taskOutput:
@@ -73,5 +86,5 @@ implementation:
               type: XGBoostModel
           label_column_name: tips
         annotations:
-          editor.position: '{"x":40,"y":460,"width":180,"height":40}'
+          editor.position: '{"x":180,"y":620,"width":180,"height":40}'
     outputValues: {}
