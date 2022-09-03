@@ -55,7 +55,14 @@ implementation:
 
           if not categories:
               print("The explicit list of categories was not passed, so inferring it automatically:")
-              categories = sorted(df[column_name].dropna().unique())
+              unique_items = df[column_name].dropna().unique()
+              # ! Pandas' Series.unique() returns very different objects depending on the dtype !
+              if hasattr(unique_items, "to_numpy"):
+                  unique_items = unique_items.to_numpy()
+              # ! Using `.tolist()` is required to convert non-native types like numpy.int64
+              # (that cannot be JSON-serialized by default) to Python native types like int.
+              unique_items = unique_items.tolist()
+              categories = sorted(unique_items)
               print(categories)
 
           categorical_type = CategoricalDtype(
