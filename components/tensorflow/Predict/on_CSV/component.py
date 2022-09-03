@@ -23,19 +23,28 @@ def predict_with_TensorFlow_model_on_CSV_data(
         ignore_errors=False,
     )
 
-    def stack_feature_batches(features_batch, labels_batch):
+    def stack_feature_batches(features_batch):
         # Need to stack individual feature columns to create a single feature tensor
         # Need to cast all column tensor types to float to prevent errors.
         list_of_feature_batches = list(
             tf.cast(x=feature_batch, dtype=tf.float32)
             for feature_batch in features_batch.values()
         )
-        return tf.stack(list_of_feature_batches, axis=-1), labels_batch
+        return tf.stack(list_of_feature_batches, axis=-1)
 
-    dataset = dataset.map(stack_feature_batches)
+    def transform_features_and_drop_labels(features_batch, labels_batch):
+        return stack_feature_batches(features_batch)
+
+    dataset_map_fn = (
+        transform_features_and_drop_labels
+        if label_column_name
+        else stack_feature_batches
+    )
+
+    dataset = dataset.map(dataset_map_fn)
 
     with open(predictions_path, "w") as predictions_file:
-        for features_batch, label_batch in dataset:
+        for features_batch in dataset:
             predictions_tensor = model(features_batch)
             numpy.savetxt(predictions_file, predictions_tensor.numpy())
 

@@ -16,8 +16,11 @@ def predict_with_TensorFlow_model_on_ApacheParquet_data(
 
     model = tf.saved_model.load(export_dir=model_path)
 
-    def stack_feature_batches(columns_batch_dict):
-        label_batch = columns_batch_dict.pop(label_column_name.encode())
+    def stack_feature_batches_and_drop_labels(columns_batch_dict):
+        if label_column_name:
+            # batch dict keys have bytes type
+            columns_batch_dict.pop(label_column_name.encode())
+
         if FEATURES_COLUMN_NAME in columns_batch_dict:
             features_batch = columns_batch_dict[FEATURES_COLUMN_NAME]
         else:
@@ -28,7 +31,7 @@ def predict_with_TensorFlow_model_on_ApacheParquet_data(
                 for feature_batch in columns_batch_dict.values()
             )
             features_batch = tf.stack(list_of_feature_batches, axis=-1)
-        return features_batch, label_batch
+        return features_batch
 
     # ! parquet::ParquetException is thrown if the Parquet dataset has nulls values
     dataset = tfio.IODataset.from_parquet(filename=dataset_path)
@@ -38,13 +41,13 @@ def predict_with_TensorFlow_model_on_ApacheParquet_data(
         num_parallel_calls=tf.data.AUTOTUNE,
         deterministic=True,
     ).map(
-        map_func=stack_feature_batches,
+        map_func=stack_feature_batches_and_drop_labels,
         num_parallel_calls=tf.data.AUTOTUNE,
         deterministic=True,
     )
 
     with open(predictions_path, "w") as predictions_file:
-        for features_batch, label_batch in dataset:
+        for features_batch in dataset:
             predictions_tensor = model(features_batch)
             numpy.savetxt(predictions_file, predictions_tensor.numpy())
 
