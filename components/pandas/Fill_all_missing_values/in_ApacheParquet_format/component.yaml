@@ -4,7 +4,6 @@ metadata:
 inputs:
 - {name: table, type: ApacheParquet}
 - {name: replacement_value, type: String, default: '0', optional: true}
-- {name: replacement_type_name, type: String, default: float, optional: true}
 outputs:
 - {name: transformed_table, type: ApacheParquet}
 implementation:
@@ -33,25 +32,43 @@ implementation:
           table_path,
           transformed_table_path,
           replacement_value = "0",
-          replacement_type_name = "float",
       ):
-          import builtins
           import pandas
 
-          replacement_type = getattr(builtins, replacement_type_name)
-          replacement_value = replacement_type(replacement_value)
-
           df = pandas.read_parquet(path=table_path)
-          df = df.fillna(value=replacement_value)
+          for column_name in df.columns:
+              column = df[column_name]
+              # The `.astype` method does not work correctly on booleans
+              # So we need to special-case them
+              if pandas.api.types.is_bool_dtype(column.dtype):
+                  if replacement_value.lower() in ("true", "1"):
+                      converted_replacement_value = True
+                  elif replacement_value.lower() in ("false", "0"):
+                      converted_replacement_value = False
+                  else:
+                      raise ValueError(
+                          f"Cannot convert value '{replacement_value}' to boolean for column {column_name}."
+                      )
+              else:
+                  # Using Pandas to convert the replacement_value to column.dtype.
+                  converted_replacement_value = pandas.Series(
+                      replacement_value, dtype=column.dtype
+                  ).tolist()[0]
+
+              print(
+                  f"Filling missing values in column '{column_name}' with '{converted_replacement_value}'"
+              )
+              column.fillna(value=converted_replacement_value)
+
           df.to_parquet(
-              path=transformed_table_path, index=False,
+              path=transformed_table_path,
+              index=False,
           )
 
       import argparse
       _parser = argparse.ArgumentParser(prog='Fill all missing values using Pandas on ApacheParquet data', description='')
       _parser.add_argument("--table", dest="table_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--replacement-value", dest="replacement_value", type=str, required=False, default=argparse.SUPPRESS)
-      _parser.add_argument("--replacement-type-name", dest="replacement_type_name", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--transformed-table", dest="transformed_table_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parsed_args = vars(_parser.parse_args())
 
@@ -64,10 +81,5 @@ implementation:
         then:
         - --replacement-value
         - {inputValue: replacement_value}
-    - if:
-        cond: {isPresent: replacement_type_name}
-        then:
-        - --replacement-type-name
-        - {inputValue: replacement_type_name}
     - --transformed-table
     - {outputPath: transformed_table}

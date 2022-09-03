@@ -5,18 +5,37 @@ def fill_all_missing_values_using_Pandas_on_ApacheParquet_data(
     table_path: InputPath("ApacheParquet"),
     transformed_table_path: OutputPath("ApacheParquet"),
     replacement_value: str = "0",
-    replacement_type_name: str = "float",
 ):
-    import builtins
     import pandas
 
-    replacement_type = getattr(builtins, replacement_type_name)
-    replacement_value = replacement_type(replacement_value)
-
     df = pandas.read_parquet(path=table_path)
-    df = df.fillna(value=replacement_value)
+    for column_name in df.columns:
+        column = df[column_name]
+        # The `.astype` method does not work correctly on booleans
+        # So we need to special-case them
+        if pandas.api.types.is_bool_dtype(column.dtype):
+            if replacement_value.lower() in ("true", "1"):
+                converted_replacement_value = True
+            elif replacement_value.lower() in ("false", "0"):
+                converted_replacement_value = False
+            else:
+                raise ValueError(
+                    f"Cannot convert value '{replacement_value}' to boolean for column {column_name}."
+                )
+        else:
+            # Using Pandas to convert the replacement_value to column.dtype.
+            converted_replacement_value = pandas.Series(
+                replacement_value, dtype=column.dtype
+            ).tolist()[0]
+
+        print(
+            f"Filling missing values in column '{column_name}' with '{converted_replacement_value}'"
+        )
+        column.fillna(value=converted_replacement_value)
+
     df.to_parquet(
-        path=transformed_table_path, index=False,
+        path=transformed_table_path,
+        index=False,
     )
 
 

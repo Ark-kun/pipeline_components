@@ -5,13 +5,8 @@ def fill_all_missing_values_using_Pandas_on_CSV_data(
     table_path: InputPath("CSV"),
     transformed_table_path: OutputPath("CSV"),
     replacement_value: str = "0",
-    replacement_type_name: str = "float",
 ):
-    import builtins
     import pandas
-
-    replacement_type = getattr(builtins, replacement_type_name)
-    replacement_value = replacement_type(replacement_value)
 
     df = pandas.read_csv(
         table_path,
