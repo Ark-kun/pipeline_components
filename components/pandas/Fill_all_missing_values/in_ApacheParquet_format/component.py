@@ -5,11 +5,12 @@ def fill_all_missing_values_using_Pandas_on_ApacheParquet_data(
     table_path: InputPath("ApacheParquet"),
     transformed_table_path: OutputPath("ApacheParquet"),
     replacement_value: str = "0",
+    column_names: list = None,
 ):
     import pandas
 
     df = pandas.read_parquet(path=table_path)
-    for column_name in df.columns:
+    for column_name in column_names or df.columns:
         column = df[column_name]
         # The `.astype` method does not work correctly on booleans
         # So we need to special-case them

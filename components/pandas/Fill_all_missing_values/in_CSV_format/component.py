@@ -5,6 +5,7 @@ def fill_all_missing_values_using_Pandas_on_CSV_data(
     table_path: InputPath("CSV"),
     transformed_table_path: OutputPath("CSV"),
     replacement_value: str = "0",
+    column_names: list = None,
 ):
     import pandas
 
@@ -12,7 +13,10 @@ def fill_all_missing_values_using_Pandas_on_CSV_data(
         table_path,
         dtype="string",
     )
-    df = df.fillna(value=replacement_value)
+
+    for column_name in column_names or df.columns:
+        df[column_name] = df[column_name].fillna(value=replacement_value)
+
     df.to_csv(
         transformed_table_path, index=False,
     )

@@ -4,6 +4,7 @@ metadata:
 inputs:
 - {name: table, type: ApacheParquet}
 - {name: replacement_value, type: String, default: '0', optional: true}
+- {name: column_names, type: JsonArray, optional: true}
 outputs:
 - {name: transformed_table, type: ApacheParquet}
 implementation:
@@ -32,11 +33,12 @@ implementation:
           table_path,
           transformed_table_path,
           replacement_value = "0",
+          column_names = None,
       ):
           import pandas
 
           df = pandas.read_parquet(path=table_path)
-          for column_name in df.columns:
+          for column_name in column_names or df.columns:
               column = df[column_name]
               # The `.astype` method does not work correctly on booleans
               # So we need to special-case them
@@ -65,10 +67,12 @@ implementation:
               index=False,
           )
 
+      import json
       import argparse
       _parser = argparse.ArgumentParser(prog='Fill all missing values using Pandas on ApacheParquet data', description='')
       _parser.add_argument("--table", dest="table_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--replacement-value", dest="replacement_value", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--column-names", dest="column_names", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--transformed-table", dest="transformed_table_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
       _parsed_args = vars(_parser.parse_args())
 
@@ -81,5 +85,10 @@ implementation:
         then:
         - --replacement-value
         - {inputValue: replacement_value}
+    - if:
+        cond: {isPresent: column_names}
+        then:
+        - --column-names
+        - {inputValue: column_names}
     - --transformed-table
     - {outputPath: transformed_table}
