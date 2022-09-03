@@ -55,6 +55,19 @@ implementation:
           new_column_name: class
         annotations:
           editor.position: '{"x":40,"y":380,"width":180,"height":54}'
+      Split rows into subsets:
+        componentRef:
+          digest: a609c3c9196484290f24a1174955f95b27f07a7b458aa5cb8cde28866cb2cb46
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/daae5a4abaa35e44501818b1534ed7827d7da073/components/dataset_manipulation/Split_rows_into_subsets/in_CSV/component.yaml
+        arguments:
+          table:
+            taskOutput:
+              outputName: transformed_table
+              taskId: Binarize column using Pandas on CSV data
+              type: CSV
+          fraction_1: '0.8'
+        annotations:
+          editor.position: '{"x":170,"y":510,"width":180,"height":40}'
       Create fully connected tensorflow network:
         componentRef:
           digest: bfcafbc5ce711b1f69cabf1338212d10d50136a73db9f9f7c984de7b80b4bfb0
@@ -65,7 +78,7 @@ implementation:
           activation_name: elu
           output_activation_name: sigmoid
         annotations:
-          editor.position: '{"x":240,"y":380,"width":180,"height":54}'
+          editor.position: '{"x":370,"y":510,"width":180,"height":54}'
       Train model using Keras on CSV:
         componentRef:
           digest: 42ae60c889034dbad74815653e95b4f7d576b5f47f803173e8679c7b54984609
@@ -73,8 +86,8 @@ implementation:
         arguments:
           training_data:
             taskOutput:
-              outputName: transformed_table
-              taskId: Binarize column using Pandas on CSV data
+              outputName: split_1
+              taskId: Split rows into subsets
               type: CSV
           model:
             taskOutput:
@@ -85,5 +98,23 @@ implementation:
           loss_function_name: binary_crossentropy
           number_of_epochs: '10'
         annotations:
-          editor.position: '{"x":40,"y":510,"width":180,"height":54}'
+          editor.position: '{"x":40,"y":630,"width":180,"height":54}'
+      Predict with TensorFlow model on CSV data:
+        componentRef:
+          digest: 921bb1563e93a78233b8acceab87055b9154ccf5595d056028cf0396ca224cd4
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/59c759ce6f543184e30db6817d2a703879bc0f39/components/tensorflow/Predict/on_CSV/component.yaml
+        arguments:
+          dataset:
+            taskOutput:
+              outputName: split_2
+              taskId: Split rows into subsets
+              type: CSV
+          model:
+            taskOutput:
+              outputName: trained_model
+              taskId: Train model using Keras on CSV
+              type: TensorflowSavedModel
+          label_column_name: class
+        annotations:
+          editor.position: '{"x":190,"y":760,"width":180,"height":54}'
     outputValues: {}
