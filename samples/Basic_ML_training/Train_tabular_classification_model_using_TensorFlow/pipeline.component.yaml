@@ -17,8 +17,8 @@ implementation:
           editor.position: '{"x":40,"y":40,"width":180,"height":40}'
       Select columns using Pandas on CSV data:
         componentRef:
-          digest: 706a611997f9354fc9380747db7265a5a18b34ae7f3deadf29c9b994042fb511
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml
+          digest: 9b9500f461c1d04f1e48992de9138db14a6800f23649d73048673d5ea6dc56ad
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/8c78aae096806cff3bc331a40566f42f5c3e9d4b/components/pandas/Select_columns/in_CSV_format/component.yaml
         arguments:
           table:
             taskOutput:
@@ -42,8 +42,8 @@ implementation:
           editor.position: '{"x":40,"y":250,"width":180,"height":54}'
       Binarize column using Pandas on CSV data:
         componentRef:
-          digest: 14f3f351dc19a36c9ef03d8399883575e2ec631830e56382ca35c13ae5b84779
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/0c7b4ea8c7048cc5cd59c161bcbfa5b742738e99/components/pandas/Binarize_column/in_CSV_format/component.yaml
+          digest: d699afd4d7cae862708717cc160f4394ed0c04e536e9515923ef1e8865f01d44
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/1e2558325f4c708aca75827c8acc13d230ee7e9f/components/pandas/Binarize_column/in_CSV_format/component.yaml
         arguments:
           table:
             taskOutput:

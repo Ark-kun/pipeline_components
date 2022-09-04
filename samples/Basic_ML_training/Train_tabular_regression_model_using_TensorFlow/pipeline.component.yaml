@@ -17,8 +17,8 @@ implementation:
           editor.position: '{"x":40,"y":40,"width":180,"height":40}'
       Select columns using Pandas on CSV data:
         componentRef:
-          digest: 706a611997f9354fc9380747db7265a5a18b34ae7f3deadf29c9b994042fb511
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/0f0650b8446277b10f7ab48d220e413eef04ec69/components/pandas/Select_columns/in_CSV_format/component.yaml
+          digest: 9b9500f461c1d04f1e48992de9138db14a6800f23649d73048673d5ea6dc56ad
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/8c78aae096806cff3bc331a40566f42f5c3e9d4b/components/pandas/Select_columns/in_CSV_format/component.yaml
         arguments:
           table:
             taskOutput:
