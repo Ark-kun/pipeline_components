@@ -11,6 +11,7 @@ create_fully_connected_tensorflow_network_op = components.load_component_from_ur
 train_model_using_Keras_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/c504a4010348c50eaaf6d4337586ccc008f4dcef/components/tensorflow/Train_model_using_Keras/on_CSV/component.yaml")
 predict_with_TensorFlow_model_on_CSV_data_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/59c759ce6f543184e30db6817d2a703879bc0f39/components/tensorflow/Predict/on_CSV/component.yaml")
 upload_Tensorflow_model_to_Google_Cloud_Vertex_AI_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/c6a8b67d1ada2cc17665c99ff6b410df588bee28/components/google-cloud/Vertex_AI/Models/Upload_Tensorflow_model/workaround_for_buggy_KFPv2_compiler/component.yaml")
+deploy_model_to_endpoint_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/27a5ea25e849c9e8c0cb6ed65518bc3ece259aaf/components/google-cloud/Vertex_AI/Models/Deploy_to_endpoint/workaround_for_buggy_KFPv2_compiler/component.yaml")
 
 # %% Pipeline definition
 def train_tabular_classification_model_using_TensorFlow_pipeline():
@@ -18,6 +19,8 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
     training_set_fraction = 0.8
+    # Deploying the model might incur additional costs over time
+    deploy_model = False
 
     classification_label_column = "class"
     all_columns = [label_column] + feature_columns
@@ -85,9 +88,15 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
         # batch_size=1000,
     ).outputs["predictions"]
 
-    vertex_model = upload_Tensorflow_model_to_Google_Cloud_Vertex_AI_op(
+    vertex_model_name = upload_Tensorflow_model_to_Google_Cloud_Vertex_AI_op(
         model=model,
     ).outputs["model_name"]
+
+    # Deploying the model might incur additional costs over time
+    if deploy_model:
+        vertex_endpoint_name = deploy_model_to_endpoint_op(
+            model_name=vertex_model_name,
+        ).outputs["endpoint_name"]
 
 pipeline_func = train_tabular_classification_model_using_TensorFlow_pipeline
 

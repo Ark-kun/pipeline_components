@@ -9,6 +9,7 @@ split_rows_into_subsets_op = components.load_component_from_url("https://raw.git
 train_XGBoost_model_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/58d3a47f904f32a64af8403330ba7e2134cae46d/components/XGBoost/Train/component.yaml")
 xgboost_predict_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/4694ec97baccf59284c2a1db4aa2250c22291eab/components/XGBoost/Predict/component.yaml")
 upload_XGBoost_model_to_Google_Cloud_Vertex_AI_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/c6a8b67d1ada2cc17665c99ff6b410df588bee28/components/google-cloud/Vertex_AI/Models/Upload_XGBoost_model/workaround_for_buggy_KFPv2_compiler/component.yaml")
+deploy_model_to_endpoint_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/27a5ea25e849c9e8c0cb6ed65518bc3ece259aaf/components/google-cloud/Vertex_AI/Models/Deploy_to_endpoint/workaround_for_buggy_KFPv2_compiler/component.yaml")
 
 # %% Pipeline definition
 def train_tabular_regression_model_using_XGBoost_pipeline():
@@ -16,6 +17,8 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
     training_set_fraction = 0.8
+    # Deploying the model might incur additional costs over time
+    deploy_model = False
 
     all_columns = [label_column] + feature_columns
 
@@ -67,6 +70,12 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
     vertex_model_name = upload_XGBoost_model_to_Google_Cloud_Vertex_AI_op(
         model=model,
     ).outputs["model_name"]
+
+    # Deploying the model might incur additional costs over time
+    if deploy_model:
+        vertex_endpoint_name = deploy_model_to_endpoint_op(
+            model_name=vertex_model_name,
+        ).outputs["endpoint_name"]
 
 pipeline_func = train_tabular_regression_model_using_XGBoost_pipeline
 
