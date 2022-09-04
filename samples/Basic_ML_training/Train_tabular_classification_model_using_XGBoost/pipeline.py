@@ -51,7 +51,7 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
 
     model = train_XGBoost_model_on_CSV_op(
         training_data=classification_training_data,
-        label_column_name=label_column,
+        label_column_name="class",
         objective="binary:logistic",
         # Optional:
         #starting_model=None,
@@ -68,7 +68,7 @@ def train_tabular_classification_model_using_XGBoost_pipeline():
         data=classification_testing_data,
         model=model,
         # label_column needs to be set when doing prediction on a dataset that has labels
-        label_column_name=label_column,
+        label_column_name="class",
     ).outputs["predictions"]
 
 pipeline_func = train_tabular_classification_model_using_XGBoost_pipeline

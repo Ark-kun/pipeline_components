@@ -78,7 +78,7 @@ implementation:
               outputName: split_1
               taskId: Split rows into subsets
               type: CSV
-          label_column_name: tips
+          label_column_name: class
           objective: binary:logistic
         annotations:
           editor.position: '{"x":40,"y":630,"width":180,"height":40}'
@@ -109,7 +109,7 @@ implementation:
               outputName: model
               taskId: Train XGBoost model on CSV
               type: XGBoostModel
-          label_column_name: tips
+          label_column_name: class
         annotations:
           editor.position: '{"x":240,"y":750,"width":180,"height":40}'
     outputValues: {}
