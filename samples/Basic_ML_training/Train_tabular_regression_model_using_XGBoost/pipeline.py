@@ -14,6 +14,8 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
     dataset_gcs_uri = "gs://ml-pipeline-dataset/Chicago_taxi_trips/chicago_taxi_trips_2019-01-01_-_2019-02-01_limit=10000.csv"
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
+    training_set_fraction = 0.8
+
     all_columns = [label_column] + feature_columns
 
     dataset = download_from_gcs_op(
@@ -34,7 +36,7 @@ def train_tabular_regression_model_using_XGBoost_pipeline():
 
     split_task = split_rows_into_subsets_op(
         table=dataset,
-        fraction_1=0.7,
+        fraction_1=training_set_fraction,
     )
     training_data = split_task.outputs["split_1"]
     testing_data = split_task.outputs["split_2"]

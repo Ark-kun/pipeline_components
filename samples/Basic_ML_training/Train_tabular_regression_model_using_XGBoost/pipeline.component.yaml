@@ -50,7 +50,7 @@ implementation:
               outputName: transformed_table
               taskId: Fill all missing values using Pandas on CSV data
               type: CSV
-          fraction_1: '0.7'
+          fraction_1: '0.8'
         annotations:
           editor.position: '{"x":170,"y":360,"width":180,"height":40}'
       Train XGBoost model on CSV:
