@@ -13,6 +13,8 @@ def train_tabular_classification_logistic_regression_model_using_Scikit_learn_pi
     dataset_gcs_uri = "gs://ml-pipeline-dataset/Chicago_taxi_trips/chicago_taxi_trips_2019-01-01_-_2019-02-01_limit=10000.csv"
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
+
+    classification_label_column = "class"
     all_columns = [label_column] + feature_columns
 
     training_data = download_from_gcs_op(
@@ -35,12 +37,12 @@ def train_tabular_classification_logistic_regression_model_using_Scikit_learn_pi
         table=training_data,
         column_name=label_column,
         predicate="> 0",
-        new_column_name="class",
+        new_column_name=classification_label_column,
     ).outputs["transformed_table"]
 
     model = train_logistic_regression_model_using_scikit_learn_from_CSV_op(
         dataset=classification_training_data,
-        label_column_name="class",
+        label_column_name=classification_label_column,
         # Optional:
         #penalty="l2",
         #solver="lbfgs",

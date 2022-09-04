@@ -18,6 +18,7 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
     label_column = "tips"
     training_set_fraction = 0.8
 
+    classification_label_column = "class"
     all_columns = [label_column] + feature_columns
 
     dataset = download_from_gcs_op(
@@ -40,7 +41,7 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
         table=dataset,
         column_name=label_column,
         predicate=" > 0",
-        new_column_name="class",
+        new_column_name=classification_label_column,
     ).outputs["transformed_table"]
 
     split_task = split_rows_into_subsets_op(
@@ -62,7 +63,7 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
     model = train_model_using_Keras_on_CSV_op(
         training_data=classification_training_data,
         model=network,
-        label_column_name="class",
+        label_column_name=classification_label_column,
         # Optional:
         loss_function_name="binary_crossentropy",
         number_of_epochs=10,
@@ -78,7 +79,7 @@ def train_tabular_classification_model_using_TensorFlow_pipeline():
         dataset=classification_testing_data,
         model=model,
         # label_column_name needs to be set when doing prediction on a dataset that has labels
-        label_column_name="class",
+        label_column_name=classification_label_column,
         # Optional:
         # batch_size=1000,
     ).outputs["predictions"]

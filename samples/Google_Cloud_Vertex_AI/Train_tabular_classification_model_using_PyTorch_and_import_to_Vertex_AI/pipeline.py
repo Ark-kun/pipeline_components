@@ -16,6 +16,8 @@ def train_tabular_classification_model_using_PyTorch_pipeline():
     dataset_gcs_uri = "gs://ml-pipeline-dataset/Chicago_taxi_trips/chicago_taxi_trips_2019-01-01_-_2019-02-01_limit=10000.csv"
     feature_columns = ["trip_seconds", "trip_miles", "pickup_community_area", "dropoff_community_area", "fare", "tolls", "extras"]  # Excluded "trip_total"
     label_column = "tips"
+
+    classification_label_column = "class"
     all_columns = [label_column] + feature_columns
 
     training_data = download_from_gcs_op(
@@ -38,7 +40,7 @@ def train_tabular_classification_model_using_PyTorch_pipeline():
         table=training_data,
         column_name=label_column,
         predicate=" > 0",
-        new_column_name="class",
+        new_column_name=classification_label_column,
     ).outputs["transformed_table"]
 
     network = create_fully_connected_pytorch_network_op(
@@ -53,7 +55,7 @@ def train_tabular_classification_model_using_PyTorch_pipeline():
     model = train_pytorch_model_from_csv_op(
         model=network,
         training_data=classification_training_data,
-        label_column_name="class",
+        label_column_name=classification_label_column,
         loss_function_name="binary_cross_entropy",
         # Optional:
         #number_of_epochs=1,
