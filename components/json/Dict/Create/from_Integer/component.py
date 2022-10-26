@@ -4,7 +4,7 @@ from kfp.components import create_component_from_func
 def create_dict_from_integer_value(
     key: str,
     value: int,
-) -> list:
+) -> dict:
     """Creates a JSON object from key and value."""
     return {key: value}
 

@@ -6,7 +6,7 @@ inputs:
 - {name: key, type: String}
 - {name: value, type: JsonArray}
 outputs:
-- {name: Output, type: JsonArray}
+- {name: Output, type: JsonObject}
 implementation:
   container:
     image: python:3.10
