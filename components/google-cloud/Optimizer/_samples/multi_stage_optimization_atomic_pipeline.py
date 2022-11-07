@@ -11,20 +11,18 @@
 # The presence of mutable global state may cause reproducibility issues where suggestions for a new model might be based on measurements from a different model.
 # The "suggest_parameter_sets_from_measurements_op" in this pipeline is a single operation, which behaves like a pure function and does not rely on external global state.
 
-kfp_endpoint = None
-
-
 import kfp
 from kfp import components
 
 
-suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/1b87c0bdfde5d7ec039401af8561783432731402/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
+suggest_parameter_sets_from_measurements_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/8469f9efd605c2a52e068e57894e01ff33a9d8b7/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml')
 
-get_element_by_index_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/dcf4fdde4876e8d76aa0131ad4d67c47b2b5591a/components/json/Get_element_by_index/component.yaml')
-build_dict_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Build_dict/component.yaml')
-build_list_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Build_list/component.yaml')
-combine_lists_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/json/Combine_lists/component.yaml')
-
+get_item_from_list_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/4c166fc/components/json/List/Get/Dict/component.yaml')
+create_dict_from_float_value_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/ef6979f5ff47df6e2375a1ce9e8c4d446b674e9f/components/json/Dict/Create/from_Float/component.yaml')
+create_dict_from_dict_value_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/ef6979f5ff47df6e2375a1ce9e8c4d446b674e9f/components/json/Dict/Create/from_Dict/component.yaml')
+merge_dicts_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/4c166fc/components/json/Dict/Merge/component.yaml')
+create_list_from_dicts_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/4c166fc/components/json/List/Create/from_Dicts/component.yaml')
+combine_lists_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/4c166fc/components/json/List/Combine/component.yaml')
 
 # The train_and_measure_model is a semi-dummy component that creates a model given the [hyper]parameters and evaluates that model.
 # In this case, the model is a polynomial model.
@@ -124,8 +122,8 @@ def optimizer_pipeline():
         # then extract the trial name and parameter sets using get_element_by_key_op and query_json_op components.
         new_metrics_for_parameter_sets = []
         for siggestion_index in range(suggestions_per_stage):
-            parameter_set = get_element_by_index_op(
-                json=parameter_sets,
+            parameter_set = get_item_from_list_op(
+                list=parameter_sets,
                 index=siggestion_index,
             ).output
 
@@ -133,21 +131,32 @@ def optimizer_pipeline():
                 parameters=parameter_set,
             ).output
 
-            metric_for_parameter_set = build_dict_op(
-                key_1='parameters',
-                value_1=parameter_set,
-                key_2='metrics',
-                value_2={
-                    'metric': model_error,
-                },
+            metric_for_parameter_set = merge_dicts_op(
+                dict_1=create_dict_from_dict_value_op(
+                    key="parameters",
+                    value=parameter_set,
+                ).output,
+                dict_2=create_dict_from_dict_value_op(
+                    key="metrics",
+                    value=create_dict_from_float_value_op(
+                        key="metric",
+                        value=model_error,
+                    ).output,
+                ).output,
             ).output
 
             new_metrics_for_parameter_sets.append(metric_for_parameter_set)
         # Collecting metrics for the current stage
-        new_list_of_metrics_for_parameter_sets = build_list_op(*new_metrics_for_parameter_sets).output
+        new_list_of_metrics_for_parameter_sets = create_list_from_dicts_op(*new_metrics_for_parameter_sets).output
         # Collecting metrics for all stages
         all_metrics_for_parameter_sets = combine_lists_op(all_metrics_for_parameter_sets, new_list_of_metrics_for_parameter_sets).output
 
 
-if __name__ == '__main__':
-    kfp.Client(host=kfp_endpoint).create_run_from_pipeline_func(optimizer_pipeline, arguments={})
+pipeline_func = optimizer_pipeline
+
+
+if __name__ == "__main__":
+    import kfp
+    # Set the KF_PIPELINES_ENDPOINT environment variable to the KFP endpoint URL:
+    # import os; os.environ["KF_PIPELINES_ENDPOINT"] = "https://XXXXXXXXXXXXXXXX-dot-us-central2.pipelines.googleusercontent.com"
+    kfp.Client().create_run_from_pipeline_func(pipeline_func, arguments={})
