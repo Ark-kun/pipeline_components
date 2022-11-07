@@ -1,5 +1,7 @@
 name: Suggest parameter sets from measurements using gcp ai platform optimizer
 description: Suggests trials (parameter sets) to evaluate.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml'}
 inputs:
 - {name: parameter_specs, type: JsonArray, description: 'List of parameter specs.
     See https://cloud.google.com/ai-platform/optimizer/docs/reference/rest/v1/projects.locations.studies#parameterspec'}
@@ -20,10 +22,6 @@ inputs:
 - {name: gcp_region, type: String, default: us-central1, optional: true}
 outputs:
 - {name: suggested_parameter_sets, type: JsonArray}
-metadata:
-  annotations:
-    author: Alexey Volkov <alexey.volkov@ark-kun.com>
-    canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/google-cloud/Optimizer/Suggest_parameter_sets_based_on_measurements/component.yaml'
 implementation:
   container:
     image: python:3.8
@@ -31,13 +29,15 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'google-api-python-client==1.12.3' 'google-auth==1.21.3'
-      || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'google-api-python-client==1.12.3' 'google-auth==1.21.3'
-      --user) && "$0" "$@"
-    - python3
-    - -u
-    - -c
+      'google-api-python-client==1.12.3' 'google-auth==1.21.3' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'google-api-python-client==1.12.3'
+      'google-auth==1.21.3' --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
     - |
       def suggest_parameter_sets_from_measurements_using_gcp_ai_platform_optimizer(
           parameter_specs,
@@ -66,6 +66,7 @@ implementation:
 
           import logging
           import random
+          import os
           import time
 
           import google.auth
@@ -75,12 +76,6 @@ implementation:
 
           client_id = 'client1'
 
-          credentials, default_project_id = google.auth.default()
-
-          # Validating and inferring the arguments
-          if not gcp_project_id:
-              gcp_project_id = default_project_id
-
           # Building the API client.
           # The main API does not work, so we need to build from the published discovery document.
           def create_caip_optimizer_client(project_id):
@@ -89,14 +84,33 @@ implementation:
               # return discovery.build("ml", "v1")
               return discovery.build("ml", "v1", discoveryServiceUrl='https://storage.googleapis.com/caip-optimizer-public/api/ml_public_google_rest_v1.json')
 
-          # Workaround for the Optimizer bug: Optimizer returns resource names that use project number, but only supports resource names with project IDs when making requests
           def get_project_number(project_id):
-              service = discovery.build('cloudresourcemanager', 'v1', credentials=credentials)
+              service = discovery.build('cloudresourcemanager', 'v1')
               response = service.projects().get(projectId=project_id).execute()
               return response['projectNumber']
 
-          gcp_project_number = get_project_number(gcp_project_id)
+          def get_project_id(project_number):
+              service = discovery.build('cloudresourcemanager', 'v1')
+              response = service.projects().get(projectId=project_number).execute()
+              return response['projectId']
 
+          # Validating and inferring the arguments
+          gcp_project_number = None
+          if not gcp_project_id:
+              # CLOUD_ML_PROJECT_ID is actually the project *number*
+              gcp_project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
+              if gcp_project_number:
+                  gcp_project_id = get_project_id(gcp_project_number)
+              else:
+                  gcp_project_id = google.auth.default()[1]
+
+          if not gcp_project_number:
+              gcp_project_number = get_project_number(gcp_project_id)
+
+          print(f"gcp_project_id={gcp_project_id}")
+          print(f"gcp_project_number={gcp_project_number}")
+
+          # Workaround for the Optimizer bug: Optimizer returns resource names that use project number, but only supports resource names with project IDs when making requests
           def fix_resource_name(name):
               return name.replace(gcp_project_number, gcp_project_id)
 
@@ -205,7 +219,10 @@ implementation:
               logging.info(f'Deleting study: "{study_name}"')
               studies_api.delete(name=fix_resource_name(study_name))
 
-      import json
+      def _deserialize_bool(s) -> bool:
+          from distutils.util import strtobool
+          return strtobool(s) == 1
+
       def _serialize_json(obj) -> str:
           if isinstance(obj, str):
               return obj
@@ -217,10 +234,7 @@ implementation:
                   raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
           return json.dumps(obj, default=default_serializer, sort_keys=True)
 
-      def _deserialize_bool(s) -> bool:
-          from distutils.util import strtobool
-          return strtobool(s) == 1
-
+      import json
       import argparse
       _parser = argparse.ArgumentParser(prog='Suggest parameter sets from measurements using gcp ai platform optimizer', description='Suggests trials (parameter sets) to evaluate.')
       _parser.add_argument("--parameter-specs", dest="parameter_specs", type=json.loads, required=True, default=argparse.SUPPRESS)

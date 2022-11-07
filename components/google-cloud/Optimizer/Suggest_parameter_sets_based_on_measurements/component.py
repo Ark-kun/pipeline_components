@@ -31,6 +31,7 @@ def suggest_parameter_sets_from_measurements_using_gcp_ai_platform_optimizer(
 
     import logging
     import random
+    import os
     import time
 
     import google.auth
@@ -40,12 +41,6 @@ def suggest_parameter_sets_from_measurements_using_gcp_ai_platform_optimizer(
 
     client_id = 'client1'
 
-    credentials, default_project_id = google.auth.default()
-
-    # Validating and inferring the arguments
-    if not gcp_project_id:
-        gcp_project_id = default_project_id
-
     # Building the API client.
     # The main API does not work, so we need to build from the published discovery document.
     def create_caip_optimizer_client(project_id):
@@ -54,14 +49,33 @@ def suggest_parameter_sets_from_measurements_using_gcp_ai_platform_optimizer(
         # return discovery.build("ml", "v1")
         return discovery.build("ml", "v1", discoveryServiceUrl='https://storage.googleapis.com/caip-optimizer-public/api/ml_public_google_rest_v1.json')
 
-    # Workaround for the Optimizer bug: Optimizer returns resource names that use project number, but only supports resource names with project IDs when making requests
     def get_project_number(project_id):
-        service = discovery.build('cloudresourcemanager', 'v1', credentials=credentials)
+        service = discovery.build('cloudresourcemanager', 'v1')
         response = service.projects().get(projectId=project_id).execute()
         return response['projectNumber']
 
-    gcp_project_number = get_project_number(gcp_project_id)
+    def get_project_id(project_number):
+        service = discovery.build('cloudresourcemanager', 'v1')
+        response = service.projects().get(projectId=project_number).execute()
+        return response['projectId']
 
+    # Validating and inferring the arguments
+    gcp_project_number = None
+    if not gcp_project_id:
+        # CLOUD_ML_PROJECT_ID is actually the project *number*
+        gcp_project_number = os.environ.get("CLOUD_ML_PROJECT_ID")
+        if gcp_project_number:
+            gcp_project_id = get_project_id(gcp_project_number)
+        else:
+            gcp_project_id = google.auth.default()[1]
+
+    if not gcp_project_number:
+        gcp_project_number = get_project_number(gcp_project_id)
+
+    print(f"gcp_project_id={gcp_project_id}")
+    print(f"gcp_project_number={gcp_project_number}")
+
+    # Workaround for the Optimizer bug: Optimizer returns resource names that use project number, but only supports resource names with project IDs when making requests
     def fix_resource_name(name):
         return name.replace(gcp_project_number, gcp_project_id)
 
