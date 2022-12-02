@@ -1,9 +1,11 @@
 import copy
+import inspect
 import json
 import textwrap
 from typing import Callable
 
 from kfp import components
+from kfp.components import structures
 
 
 def convert_component_to_vertex_custom_job_payload(
