@@ -31,7 +31,7 @@ def train_model_using_scikit_learn_from_CSV(
 
     numpy.random.seed(random_seed)
     model = model_class(**model_parameters)
-    df = pandas.read_csv(dataset_path).convert_dtypes()
+    df = pandas.read_csv(dataset_path)
     model.fit(
         X=df.drop(columns=label_column_name),
         y=df[label_column_name],

@@ -23,7 +23,7 @@ def train_logistic_regression_model_using_scikit_learn_from_CSV(
     import pickle
     from sklearn import linear_model
 
-    df = pandas.read_csv(dataset_path).convert_dtypes()
+    df = pandas.read_csv(dataset_path)
     model = linear_model.LogisticRegression(
         penalty=penalty,
         #dual=False,
