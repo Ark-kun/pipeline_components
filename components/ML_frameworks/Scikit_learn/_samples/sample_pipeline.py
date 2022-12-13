@@ -6,9 +6,9 @@ binarize_column_using_Pandas_on_CSV_data_op = components.load_component_from_url
 drop_header_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/d8c4cf5e6403bc65bcf8d606e6baf87e2528a3dc/components/tables/Remove_header/component.yaml")
 calculate_regression_metrics_from_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/37d98d43ad3193cf3516c134899f272d9643117c/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml")
 
-train_linear_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/f807e02b54d4886c65a05f40848fd51c72407f40/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml")
-train_logistic_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/cb44b75c9c062fcc40c2b905b2024b4493dbc62b/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml")
-train_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/46e8248ab69c6b7910b1eae05268493e4ec8ca90/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml")
+train_linear_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/69a3fccb23196e6f7f731da62da6c8836c594728/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml")
+train_logistic_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/69a3fccb23196e6f7f731da62da6c8836c594728/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml")
+train_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/69a3fccb23196e6f7f731da62da6c8836c594728/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml")
 
 
 def scikit_learn_linear_pipeline():

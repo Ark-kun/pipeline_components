@@ -126,8 +126,8 @@ implementation:
           editor.position: '{"x":720,"y":620,"width":180,"height":40}'
       Train linear regression model using scikit learn from CSV:
         componentRef:
-          digest: c7fe7912ab0d1fb45d201d452e9ce6be5544e7d8c6d229db7a4b931ff58560f3
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/f807e02b54d4886c65a05f40848fd51c72407f40/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml
+          digest: e5b54895d95b4f2128d92c3f266fc5f5006c57e047e78305c728156f084547a0
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/69a3fccb23196e6f7f731da62da6c8836c594728/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml
         arguments:
           dataset:
             taskOutput:

@@ -22,7 +22,7 @@ train_XGBoost_model_on_CSV_op = components.load_component_from_url("https://raw.
 xgboost_predict_on_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/4694ec97baccf59284c2a1db4aa2250c22291eab/components/XGBoost/Predict/component.yaml")
 
 # Scikit-learn
-train_linear_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/f807e02b54d4886c65a05f40848fd51c72407f40/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml")
+train_linear_regression_model_using_scikit_learn_from_CSV_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/69a3fccb23196e6f7f731da62da6c8836c594728/components/ML_frameworks/Scikit_learn/Train_linear_regression_model/from_CSV/component.yaml")
 
 # %% Pipeline definition
 def train_tabular_regression_model_using_all_frameworks_pipeline():

@@ -145,8 +145,8 @@ implementation:
           editor.position: '{"x":720,"y":750,"width":180,"height":40}'
       Train logistic regression model using scikit learn from CSV:
         componentRef:
-          digest: a864625a822e4b1c8ef6fe4ae1454fd90f15438f70a6712bb4c30e0dda4d35b7
-          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/cb44b75c9c062fcc40c2b905b2024b4493dbc62b/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml
+          digest: 37d41e8a300f593dbaf60e33cf15f4a5f71d18cf347f2b02add65ee51f7d3287
+          url: https://raw.githubusercontent.com/Ark-kun/pipeline_components/69a3fccb23196e6f7f731da62da6c8836c594728/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml
         arguments:
           dataset:
             taskOutput:
