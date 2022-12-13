@@ -21,10 +21,15 @@ def split_rows_into_subsets(
     """Splits the data table according to the split fractions.
 
     Args:
+        table_path: Input data table.
+        split_1_path: Subset of the data table.
+        split_2_path: Subset of the data table.
+        split_3_path: Subset of the data table.
         fraction_1: The proportion of the lines to put into the 1st split. Range: [0, 1]
         fraction_2: The proportion of the lines to put into the 2nd split. Range: [0, 1]
             If fraction_2 is not specified, then fraction_2 = 1 - fraction_1.
             The remaining lines go to the 3rd split (if any).
+        random_seed: Controls the seed of the random processes.
     """
     import random
 

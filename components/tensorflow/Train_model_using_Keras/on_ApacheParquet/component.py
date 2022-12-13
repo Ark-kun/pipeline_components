@@ -15,6 +15,22 @@ def train_model_using_Keras_on_ApacheParquet(
     metric_names: list = None,
     random_seed: int = 0,
 ):
+    """Trains TensorFlow model.
+
+    Args:
+        training_data_path: Tabular dataset for training.
+        model_path: Model in TensorFlow format.
+        trained_model_path: Trained model in TensorFlow format.
+        label_column_name: Name of the table column to use as label.
+        loss_function_name: Name of the loss function.
+        number_of_epochs: Number of training epochs.
+        learning_rate: Learning rate of the optimizer.
+        optimizer_name: Name of the optimizer.
+        optimizer_parameters: Optimizer parameters in dictionary form.
+        batch_size: Number of training samples to use in each batch.
+        metric_names: A list of metrics to evaluate during the training.
+        random_seed: Controls the seed of the random processes.
+    """
     import tensorflow as tf
     import tensorflow_io as tfio
 

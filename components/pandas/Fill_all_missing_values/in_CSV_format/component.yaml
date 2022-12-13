@@ -1,12 +1,16 @@
 name: Fill all missing values using Pandas on CSV data
+description: Fills the missing column items with the specified replacement value.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/pandas/Fill_all_missing_values/in_CSV_format/component.yaml'}
 inputs:
-- {name: table, type: CSV}
-- {name: replacement_value, type: String, default: '0', optional: true}
-- {name: column_names, type: JsonArray, optional: true}
+- {name: table, type: CSV, description: Input data table.}
+- {name: replacement_value, type: String, description: The value to use when replacing
+    the missing items., default: '0', optional: true}
+- {name: column_names, type: JsonArray, description: Names of the columns where to
+    perform the replacement., optional: true}
 outputs:
-- {name: transformed_table, type: CSV}
+- {name: transformed_table, type: CSV, description: Transformed data table where missing
+    values are filed.}
 implementation:
   container:
     image: python:3.9
@@ -34,6 +38,14 @@ implementation:
           replacement_value = "0",
           column_names = None,
       ):
+          """Fills the missing column items with the specified replacement value.
+
+          Args:
+              table_path: Input data table.
+              transformed_table_path: Transformed data table where missing values are filed.
+              replacement_value: The value to use when replacing the missing items.
+              column_names: Names of the columns where to perform the replacement.
+          """
           import pandas
 
           df = pandas.read_csv(
@@ -50,7 +62,7 @@ implementation:
 
       import json
       import argparse
-      _parser = argparse.ArgumentParser(prog='Fill all missing values using Pandas on CSV data', description='')
+      _parser = argparse.ArgumentParser(prog='Fill all missing values using Pandas on CSV data', description='Fills the missing column items with the specified replacement value.')
       _parser.add_argument("--table", dest="table_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--replacement-value", dest="replacement_value", type=str, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--column-names", dest="column_names", type=json.loads, required=False, default=argparse.SUPPRESS)

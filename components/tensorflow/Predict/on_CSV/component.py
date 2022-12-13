@@ -8,6 +8,15 @@ def predict_with_TensorFlow_model_on_CSV_data(
     label_column_name: str = None,
     batch_size: int = 1000,
 ):
+    """Makes predictions using TensorFlow model.
+
+    Args:
+        dataset_path: Tabular dataset for prediction.
+        model_path: Trained model in TensorFlow format.
+        predictions_path: Predictions in multiline text format.
+        label_column_name: Name of the table column to use as label.
+        batch_size: Number of samples to use in each batch.
+    """
     import numpy
     import tensorflow as tf
 

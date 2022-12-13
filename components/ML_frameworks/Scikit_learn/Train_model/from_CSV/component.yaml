@@ -3,8 +3,9 @@ description: Train any Scikit-learn model
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Scikit_learn/Train_model/from_CSV/component.yaml'}
 inputs:
-- {name: dataset, type: CSV}
-- {name: label_column_name, type: String}
+- {name: dataset, type: CSV, description: Tabular dataset for training.}
+- {name: label_column_name, type: String, description: Name of the table column to
+    use as label.}
 - {name: model_class_name, type: String, description: 'Full model class name. Example:
     `sklearn.linear_model.LogisticRegression`'}
 - {name: model_parameters, type: JsonObject, description: A dictionary of model class
@@ -12,8 +13,9 @@ inputs:
 - {name: random_seed, type: Integer, description: Controls the seed of the random
     processes., default: '0', optional: true}
 outputs:
-- {name: model, type: ScikitLearnPickleModel}
-- {name: model_dict, type: JsonObject}
+- {name: model, type: ScikitLearnPickleModel, description: Trained model in Scikit-learn
+    pickle format.}
+- {name: model_dict, type: JsonObject, description: Trained model in dictionary format.}
 implementation:
   container:
     image: python:3.9
@@ -48,6 +50,10 @@ implementation:
           """Train any Scikit-learn model
 
           Args:
+              dataset_path: Tabular dataset for training.
+              model_path: Trained model in Scikit-learn pickle format.
+              model_dict_path: Trained model in dictionary format.
+              label_column_name: Name of the table column to use as label.
               model_class_name: Full model class name. Example: `sklearn.linear_model.LogisticRegression`
               model_parameters: A dictionary of model class parameter values.
               random_seed: Controls the seed of the random processes.

@@ -14,9 +14,45 @@ def train_logistic_regression_model_using_scikit_learn_from_CSV(
 ) -> NamedTuple("Outputs", [
     ("model_parameters", dict),
 ]):
-    """Train logistic regression model using Scikit-learn
+    """Trains logistic regression model using Scikit-learn.
 
     See https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
+
+    Args:
+        dataset_path: Tabular dataset for training.
+        model_path: Trained model in Scikit-learn pickle format.
+        label_column_name: Name of the table column to use as label.
+        penalty: Used to specify the norm used in the penalization.
+            Possible values: {'l1', 'l2', 'elasticnet', 'none'}, default='l2'
+            The 'newton-cg',
+            'sag' and 'lbfgs' solvers support only l2 penalties. 'elasticnet' is
+            only supported by the 'saga' solver. If 'none' (not supported by the
+            liblinear solver), no regularization is applied.
+        solver: Algorithm to use in the optimization problem.
+            Possible values: {'newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'}, default='lbfgs'
+
+            - For small datasets, 'liblinear' is a good choice, whereas 'sag' and
+            'saga' are faster for large ones.
+            - For multiclass problems, only 'newton-cg', 'sag', 'saga' and 'lbfgs'
+            handle multinomial loss; 'liblinear' is limited to one-versus-rest
+            schemes.
+            - 'newton-cg', 'lbfgs', 'sag' and 'saga' handle L2 or no penalty
+            - 'liblinear' and 'saga' also handle L1 penalty
+            - 'saga' also supports 'elasticnet' penalty
+            - 'liblinear' does not support setting ``penalty='none'``
+
+            Note that 'sag' and 'saga' fast convergence is only guaranteed on
+            features with approximately the same scale. You can
+            preprocess the data with a scaler from sklearn.preprocessing.
+        max_iterations: Maximum number of iterations taken for the solvers to converge.
+        multi_class_mode: Possible values: {'auto', 'ovr', 'multinomial'}, default='auto'
+            If the option chosen is 'ovr', then a binary problem is fit for each
+            label. For 'multinomial' the loss minimised is the multinomial loss fit
+            across the entire probability distribution, *even when the data is
+            binary*. 'multinomial' is unavailable when solver='liblinear'.
+            'auto' selects 'ovr' if the data is binary, or if solver='liblinear',
+            and otherwise selects 'multinomial'.
+        random_seed: Controls the seed of the random processes.
     """
     import json
     import pandas

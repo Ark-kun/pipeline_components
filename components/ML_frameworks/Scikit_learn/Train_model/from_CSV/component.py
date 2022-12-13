@@ -13,6 +13,10 @@ def train_model_using_scikit_learn_from_CSV(
     """Train any Scikit-learn model
 
     Args:
+        dataset_path: Tabular dataset for training.
+        model_path: Trained model in Scikit-learn pickle format.
+        model_dict_path: Trained model in dictionary format.
+        label_column_name: Name of the table column to use as label.
         model_class_name: Full model class name. Example: `sklearn.linear_model.LogisticRegression`
         model_parameters: A dictionary of model class parameter values.
         random_seed: Controls the seed of the random processes.

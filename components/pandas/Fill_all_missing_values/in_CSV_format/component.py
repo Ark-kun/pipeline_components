@@ -7,6 +7,14 @@ def fill_all_missing_values_using_Pandas_on_CSV_data(
     replacement_value: str = "0",
     column_names: list = None,
 ):
+    """Fills the missing column items with the specified replacement value.
+
+    Args:
+        table_path: Input data table.
+        transformed_table_path: Transformed data table where missing values are filed.
+        replacement_value: The value to use when replacing the missing items.
+        column_names: Names of the columns where to perform the replacement.
+    """
     import pandas
 
     df = pandas.read_csv(

@@ -9,6 +9,16 @@ def binarize_column_using_Pandas_on_CSV_data(
     new_column_name: str = None,
     keep_original_column: bool = False,
 ):
+    """Transforms a table column into a binary class column using a predicate.
+
+    Args:
+        table_path: Input data table.
+        transformed_table_path: Transformed data table with the binary class column.
+        column_name: Name of the column to transform to binary class.
+        predicate: Expression that determines whether the column value is mapped to class 0 (false) or class 1 (true).
+        new_column_name: Name for the new class column. Equals column_name by default.
+        keep_original_column: Whether to keep the original column (column_name) in the table.
+    """
     import pandas
 
     df = pandas.read_csv(table_path).convert_dtypes()

@@ -6,6 +6,13 @@ def select_columns_using_Pandas_on_ApacheParquet_data(
     transformed_table_path: OutputPath("ApacheParquet"),
     column_names: list,
 ):
+    """Selects columns from a data table.
+
+    Args:
+        table_path: Input data table.
+        transformed_table_path: Transformed data table that only has the chosen columns.
+        column_names: Names of the columns to select from the table.
+    """
     import pandas
 
     df = pandas.read_parquet(table_path)

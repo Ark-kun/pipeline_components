@@ -1,16 +1,22 @@
 name: Create fully connected pytorch network
-description: Creates fully-connected network in PyTorch ScriptModule format
+description: Creates untrained fully-connected network in PyTorch ScriptModule format.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/PyTorch/Create_fully_connected_network/component.yaml'}
 inputs:
-- {name: input_size, type: Integer}
-- {name: hidden_layer_sizes, type: JsonArray, default: '[]', optional: true}
-- {name: output_size, type: Integer, default: '1', optional: true}
-- {name: activation_name, type: String, default: relu, optional: true}
-- {name: output_activation_name, type: String, optional: true}
-- {name: random_seed, type: Integer, default: '0', optional: true}
+- {name: input_size, type: Integer, description: Size of the input vector.}
+- {name: hidden_layer_sizes, type: JsonArray, description: Sizes of the hidden layers.,
+  default: '[]', optional: true}
+- {name: output_size, type: Integer, description: Size of the output vector., default: '1',
+  optional: true}
+- {name: activation_name, type: String, description: Name of the activation function
+    used between layers., default: relu, optional: true}
+- {name: output_activation_name, type: String, description: Name of the activation
+    function used after output layers., optional: true}
+- {name: random_seed, type: Integer, description: Controls the seed of the random
+    processes., default: '0', optional: true}
 outputs:
-- {name: model, type: PyTorchScriptModule}
+- {name: model, type: PyTorchScriptModule, description: Untrained model in PyTorch
+    Script Module format.}
 implementation:
   container:
     image: pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime
@@ -36,7 +42,17 @@ implementation:
           output_activation_name = None,
           random_seed = 0,
       ):
-          '''Creates fully-connected network in PyTorch ScriptModule format'''
+          """Creates untrained fully-connected network in PyTorch ScriptModule format.
+
+          Args:
+              input_size: Size of the input vector.
+              model_path: Untrained model in PyTorch Script Module format.
+              hidden_layer_sizes: Sizes of the hidden layers.
+              output_size: Size of the output vector.
+              activation_name: Name of the activation function used between layers.
+              output_activation_name: Name of the activation function used after output layers.
+              random_seed: Controls the seed of the random processes.
+          """
           import torch
           torch.manual_seed(random_seed)
 
@@ -74,7 +90,7 @@ implementation:
 
       import json
       import argparse
-      _parser = argparse.ArgumentParser(prog='Create fully connected pytorch network', description='Creates fully-connected network in PyTorch ScriptModule format')
+      _parser = argparse.ArgumentParser(prog='Create fully connected pytorch network', description='Creates untrained fully-connected network in PyTorch ScriptModule format.')
       _parser.add_argument("--input-size", dest="input_size", type=int, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--hidden-layer-sizes", dest="hidden_layer_sizes", type=json.loads, required=False, default=argparse.SUPPRESS)
       _parser.add_argument("--output-size", dest="output_size", type=int, required=False, default=argparse.SUPPRESS)

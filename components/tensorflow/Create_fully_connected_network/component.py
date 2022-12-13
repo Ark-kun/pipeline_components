@@ -10,7 +10,17 @@ def create_fully_connected_tensorflow_network(
     output_activation_name: str = None,
     random_seed: int = 0,
 ):
-    """Creates fully-connected network in Tensorflow SavedModel format"""
+    """Creates untrained fully-connected network in Tensorflow SavedModel format.
+
+    Args:
+        input_size: Size of the input vector.
+        model_path: Untrained model in Tensorflow SavedModel format.
+        hidden_layer_sizes: Sizes of the hidden layers.
+        output_size: Size of the output vector.
+        activation_name: Name of the activation function used between layers.
+        output_activation_name: Name of the activation function used after output layers.
+        random_seed: Controls the seed of the random processes.
+    """
     import tensorflow as tf
     tf.random.set_seed(seed=random_seed)
 

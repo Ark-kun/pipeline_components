@@ -14,7 +14,22 @@ def train_pytorch_model_from_csv(
     batch_log_interval: int = 100,
     random_seed: int = 0,
 ):
-    '''Trains PyTorch model'''
+    """Trains PyTorch model.
+
+    Args:
+        model_path: Model in PyTorch format.
+        training_data_path: Tabular dataset for training.
+        trained_model_path: Trained model in PyTorch format.
+        label_column_name: Name of the table column to use as label.
+        loss_function_name: Name of the loss function.
+        number_of_epochs: Number of training epochs.
+        learning_rate: Learning rate of the optimizer.
+        optimizer_name: Name of the optimizer.
+        optimizer_parameters: Optimizer parameters in dictionary form.
+        batch_size: Number of training samples to use in each batch.
+        batch_log_interval: Print training summary after every N batches.
+        random_seed: Controls the seed of the random processes.
+    """
     import pandas
     import torch
 

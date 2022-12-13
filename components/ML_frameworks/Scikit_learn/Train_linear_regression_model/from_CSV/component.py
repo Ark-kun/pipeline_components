@@ -6,6 +6,15 @@ def train_linear_regression_model_using_scikit_learn_from_CSV(
     model_path: OutputPath("ScikitLearnPickleModel"),
     label_column_name: str,
 ):
+    """Trains linear regression model using Scikit-learn.
+
+    See https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html#sklearn.linear_model.LinearRegression
+
+    Args:
+        dataset_path: Tabular dataset for training.
+        model_path: Trained model in Scikit-learn pickle format.
+        label_column_name: Name of the table column to use as label.
+    """
     import pandas
     import pickle
     from sklearn import linear_model

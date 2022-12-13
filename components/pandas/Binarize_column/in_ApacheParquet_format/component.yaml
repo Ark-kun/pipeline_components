@@ -1,17 +1,24 @@
 name: Binarize column using Pandas on ApacheParquet data
+description: Transforms a table column into a binary class column using a predicate.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/pandas/Binarize_column/in_ApacheParquet_format/component.yaml'}
 inputs:
-- {name: table, type: ApacheParquet}
-- {name: column_name, type: String}
-- {name: predicate, type: String, default: '> 0', optional: true}
-- {name: new_column_name, type: String, optional: true}
+- {name: table, type: ApacheParquet, description: Input data table.}
+- {name: column_name, type: String, description: Name of the column to transform to
+    binary class.}
+- {name: predicate, type: String, description: Expression that determines whether
+    the column value is mapped to class 0 (false) or class 1 (true)., default: '>
+    0', optional: true}
+- {name: new_column_name, type: String, description: Name for the new class column.
+    Equals column_name by default., optional: true}
 - name: keep_original_column
   type: Boolean
+  description: Whether to keep the original column (column_name) in the table.
   default: "False"
   optional: true
 outputs:
-- {name: transformed_table, type: ApacheParquet}
+- {name: transformed_table, type: ApacheParquet, description: Transformed data table
+    with the binary class column.}
 implementation:
   container:
     image: python:3.9
@@ -42,6 +49,16 @@ implementation:
           new_column_name = None,
           keep_original_column = False,
       ):
+          """Transforms a table column into a binary class column using a predicate.
+
+          Args:
+              table_path: Input data table.
+              transformed_table_path: Transformed data table with the binary class column.
+              column_name: Name of the column to transform to binary class.
+              predicate: Expression that determines whether the column value is mapped to class 0 (false) or class 1 (true).
+              new_column_name: Name for the new class column. Equals column_name by default.
+              keep_original_column: Whether to keep the original column (column_name) in the table.
+          """
           import pandas
 
           df = pandas.read_parquet(path=table_path)
@@ -80,7 +97,7 @@ implementation:
           return strtobool(s) == 1
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Binarize column using Pandas on ApacheParquet data', description='')
+      _parser = argparse.ArgumentParser(prog='Binarize column using Pandas on ApacheParquet data', description='Transforms a table column into a binary class column using a predicate.')
       _parser.add_argument("--table", dest="table_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--column-name", dest="column_name", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--predicate", dest="predicate", type=str, required=False, default=argparse.SUPPRESS)

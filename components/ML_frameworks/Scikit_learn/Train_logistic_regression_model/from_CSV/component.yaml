@@ -1,17 +1,62 @@
 name: Train logistic regression model using scikit learn from CSV
-description: Train logistic regression model using Scikit-learn
+description: Trains logistic regression model using Scikit-learn.
 metadata:
   annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ML_frameworks/Scikit_learn/Train_logistic_regression_model/from_CSV/component.yaml'}
 inputs:
-- {name: dataset, type: CSV}
-- {name: label_column_name, type: String}
-- {name: penalty, type: String, default: l2, optional: true}
-- {name: solver, type: String, default: lbfgs, optional: true}
-- {name: max_iterations, type: Integer, default: '100', optional: true}
-- {name: multi_class_mode, type: String, default: auto, optional: true}
-- {name: random_seed, type: Integer, default: '0', optional: true}
+- {name: dataset, type: CSV, description: Tabular dataset for training.}
+- {name: label_column_name, type: String, description: Name of the data column to
+    use as label.}
+- name: penalty
+  type: String
+  description: |-
+    Used to specify the norm used in the penalization.
+    Possible values: {'l1', 'l2', 'elasticnet', 'none'}, default='l2'
+    The 'newton-cg',
+    'sag' and 'lbfgs' solvers support only l2 penalties. 'elasticnet' is
+    only supported by the 'saga' solver. If 'none' (not supported by the
+    liblinear solver), no regularization is applied.
+  default: l2
+  optional: true
+- name: solver
+  type: String
+  description: |-
+    Algorithm to use in the optimization problem.
+    Possible values: {'newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'}, default='lbfgs'
+
+    - For small datasets, 'liblinear' is a good choice, whereas 'sag' and
+    'saga' are faster for large ones.
+    - For multiclass problems, only 'newton-cg', 'sag', 'saga' and 'lbfgs'
+    handle multinomial loss; 'liblinear' is limited to one-versus-rest
+    schemes.
+    - 'newton-cg', 'lbfgs', 'sag' and 'saga' handle L2 or no penalty
+    - 'liblinear' and 'saga' also handle L1 penalty
+    - 'saga' also supports 'elasticnet' penalty
+    - 'liblinear' does not support setting ``penalty='none'``
+
+    Note that 'sag' and 'saga' fast convergence is only guaranteed on
+    features with approximately the same scale. You can
+    preprocess the data with a scaler from sklearn.preprocessing.
+  default: lbfgs
+  optional: true
+- {name: max_iterations, type: Integer, description: Maximum number of iterations
+    taken for the solvers to converge., default: '100', optional: true}
+- name: multi_class_mode
+  type: String
+  description: |-
+    Possible values: {'auto', 'ovr', 'multinomial'}, default='auto'
+    If the option chosen is 'ovr', then a binary problem is fit for each
+    label. For 'multinomial' the loss minimised is the multinomial loss fit
+    across the entire probability distribution, *even when the data is
+    binary*. 'multinomial' is unavailable when solver='liblinear'.
+    'auto' selects 'ovr' if the data is binary, or if solver='liblinear',
+    and otherwise selects 'multinomial'.
+  default: auto
+  optional: true
+- {name: random_seed, type: Integer, description: Controls the seed of the random
+    processes., default: '0', optional: true}
 outputs:
-- {name: model, type: ScikitLearnPickleModel}
+- {name: model, type: ScikitLearnPickleModel, description: Trained model in Scikit-learn
+    pickle format.}
 - {name: model_parameters, type: JsonObject}
 implementation:
   container:
@@ -45,9 +90,45 @@ implementation:
           multi_class_mode = "auto", # auto, ovr, multinomial
           random_seed = 0,
       ):
-          """Train logistic regression model using Scikit-learn
+          """Trains logistic regression model using Scikit-learn.
 
           See https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
+
+          Args:
+              dataset_path: Tabular dataset for training.
+              model_path: Trained model in Scikit-learn pickle format.
+              label_column_name: Name of the data column to use as label.
+              penalty: Used to specify the norm used in the penalization.
+                  Possible values: {'l1', 'l2', 'elasticnet', 'none'}, default='l2'
+                  The 'newton-cg',
+                  'sag' and 'lbfgs' solvers support only l2 penalties. 'elasticnet' is
+                  only supported by the 'saga' solver. If 'none' (not supported by the
+                  liblinear solver), no regularization is applied.
+              solver: Algorithm to use in the optimization problem.
+                  Possible values: {'newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'}, default='lbfgs'
+
+                  - For small datasets, 'liblinear' is a good choice, whereas 'sag' and
+                  'saga' are faster for large ones.
+                  - For multiclass problems, only 'newton-cg', 'sag', 'saga' and 'lbfgs'
+                  handle multinomial loss; 'liblinear' is limited to one-versus-rest
+                  schemes.
+                  - 'newton-cg', 'lbfgs', 'sag' and 'saga' handle L2 or no penalty
+                  - 'liblinear' and 'saga' also handle L1 penalty
+                  - 'saga' also supports 'elasticnet' penalty
+                  - 'liblinear' does not support setting ``penalty='none'``
+
+                  Note that 'sag' and 'saga' fast convergence is only guaranteed on
+                  features with approximately the same scale. You can
+                  preprocess the data with a scaler from sklearn.preprocessing.
+              max_iterations: Maximum number of iterations taken for the solvers to converge.
+              multi_class_mode: Possible values: {'auto', 'ovr', 'multinomial'}, default='auto'
+                  If the option chosen is 'ovr', then a binary problem is fit for each
+                  label. For 'multinomial' the loss minimised is the multinomial loss fit
+                  across the entire probability distribution, *even when the data is
+                  binary*. 'multinomial' is unavailable when solver='liblinear'.
+                  'auto' selects 'ovr' if the data is binary, or if solver='liblinear',
+                  and otherwise selects 'multinomial'.
+              random_seed: Controls the seed of the random processes.
           """
           import json
           import pandas
@@ -99,7 +180,7 @@ implementation:
           return json.dumps(obj, default=default_serializer, sort_keys=True)
 
       import argparse
-      _parser = argparse.ArgumentParser(prog='Train logistic regression model using scikit learn from CSV', description='Train logistic regression model using Scikit-learn')
+      _parser = argparse.ArgumentParser(prog='Train logistic regression model using scikit learn from CSV', description='Trains logistic regression model using Scikit-learn.')
       _parser.add_argument("--dataset", dest="dataset_path", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=True, default=argparse.SUPPRESS)
       _parser.add_argument("--penalty", dest="penalty", type=str, required=False, default=argparse.SUPPRESS)
