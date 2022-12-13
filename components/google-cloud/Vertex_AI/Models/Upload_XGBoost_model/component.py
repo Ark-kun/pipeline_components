@@ -40,8 +40,8 @@ def upload_XGBoost_model_to_Google_Cloud_Vertex_AI(
     labels["component-source"] = "github-com-ark-kun-pipeline-components"
 
     # The serving container decides the model type based on the model file extension.
-    # So we need to rename the mode file (e.g. /tmp/inputs/model/data) to *.pkl
-    _, renamed_model_path = tempfile.mkstemp(suffix=".pkl")
+    # So we need to rename the mode file (e.g. /tmp/inputs/model/data) to *.bst
+    _, renamed_model_path = tempfile.mkstemp(suffix=".bst")
     shutil.copyfile(src=model_path, dst=renamed_model_path)
 
     model = aiplatform.Model.upload_xgboost_model_file(
