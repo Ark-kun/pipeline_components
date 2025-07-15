@@ -82,7 +82,7 @@ if __name__ == '__main__':
     split_table_into_folds_op = create_component_from_func(
         split_table_into_folds,
         base_image='python:3.7',
-        packages_to_install=['scikit-learn==0.23.1', 'pandas==1.0.5'],
+        packages_to_install=['scikit-learn==0.23.1', 'pandas==1.0.5', 'numpy<2'],
         output_component_file='component.yaml',
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

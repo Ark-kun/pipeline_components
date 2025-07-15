@@ -100,6 +100,7 @@ if __name__ == "__main__":
         packages_to_install=[
             "scikit-learn==1.0.2",
             "pandas==1.4.3",
+            "numpy<2",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

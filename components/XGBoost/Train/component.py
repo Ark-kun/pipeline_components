@@ -110,6 +110,7 @@ if __name__ == "__main__":
         packages_to_install=[
             "xgboost==1.6.1",
             "pandas==1.4.3",
+            "numpy<2",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

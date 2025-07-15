@@ -43,6 +43,7 @@ if __name__ == '__main__':
         base_image='python:3.7',
         packages_to_install=[
             'pandas==1.4.3',
+            'numpy<2',
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

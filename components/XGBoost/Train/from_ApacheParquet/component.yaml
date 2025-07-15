@@ -58,8 +58,8 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'xgboost==1.6.1' 'pandas==1.4.3' 'pyarrow==9.0.0' || PIP_DISABLE_PIP_VERSION_CHECK=1
-      python3 -m pip install --quiet --no-warn-script-location 'xgboost==1.6.1' 'pandas==1.4.3'
+      'xgboost==1.6.1' 'pandas==1.4.3' 'pyarrow==9.0.0' 'numpy<2' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'xgboost==1.6.1' 'pandas==1.4.3' 'numpy<2'
       'pyarrow==9.0.0' --user) && "$0" "$@"
     - sh
     - -ec

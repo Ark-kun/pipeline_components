@@ -85,7 +85,7 @@ if __name__ == '__main__':
     keras_train_classifier_from_csv_op = create_component_from_func(
         keras_train_classifier_from_csv,
         base_image='tensorflow/tensorflow:2.2.0',
-        packages_to_install=['keras==2.3.1', 'pandas==1.4.3'],
+        packages_to_install=['keras==2.3.1', 'pandas==1.4.3', 'numpy<2'],
         output_component_file='component.yaml',
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

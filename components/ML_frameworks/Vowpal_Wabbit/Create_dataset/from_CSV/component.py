@@ -47,6 +47,7 @@ if __name__ == "__main__":
         packages_to_install=[
             "vowpalwabbit==9.0.1",
             "pandas==1.4.3",  # Not installed by vowpalwabbit despite its requirements.txt
+            "numpy<2",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",

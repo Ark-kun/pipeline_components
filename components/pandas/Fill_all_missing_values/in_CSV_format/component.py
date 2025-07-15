@@ -35,7 +35,7 @@ if __name__ == "__main__":
         fill_all_missing_values_using_Pandas_on_CSV_data,
         output_component_file="component.yaml",
         base_image="python:3.9",
-        packages_to_install=["pandas==1.4.1",],
+        packages_to_install=["pandas==1.4.1", "numpy<2"],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
             "canonical_location": "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/pandas/Fill_all_missing_values/in_CSV_format/component.yaml",

@@ -57,6 +57,7 @@ if __name__ == "__main__":
         packages_to_install=[
             "pandas==1.4.3",
             "pyarrow==9.0.0",
+            "numpy<2",
         ],
         annotations={
             "author": "Alexey Volkov <alexey.volkov@ark-kun.com>",
