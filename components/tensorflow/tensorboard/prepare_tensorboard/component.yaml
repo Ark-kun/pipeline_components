@@ -6,7 +6,8 @@ description: |
 inputs:
 - {name: Log dir URI}
 outputs:
-- {name: mlpipeline-ui-metadata, type: kfp.v1.ui-metadata}
+- {name: Log dir URI}
+- {name: MLPipeline UI Metadata}
 metadata:
   annotations:
     author: Alexey Volkov <alexey.volkov@ark-kun.com>
