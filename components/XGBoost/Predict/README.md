@@ -19,7 +19,7 @@ Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/co
 
 |Name|Type|Description|
 |-|-|-|
-|predictions|[Text]|Model predictions.|
+|predictions||Model predictions.|
 
 ## Implementation
 
@@ -47,10 +47,8 @@ xgboost_predict_on_CSV_task = xgboost_predict_on_CSV_op(
 * input_type=[CSV]
 * input_type=[String]
 * input_type=[XGBoostModel]
-* output_type=[Text]
 
 [CSV]: https://github.com/Ark-kun/pipeline_components/tree/master/types/CSV
 [String]: https://github.com/Ark-kun/pipeline_components/tree/master/types/String
-[Text]: https://github.com/Ark-kun/pipeline_components/tree/master/types/Text
 [XGBoostModel]: https://github.com/Ark-kun/pipeline_components/tree/master/types/XGBoostModel
 <!-- END_GENERATED_CONTENT -->

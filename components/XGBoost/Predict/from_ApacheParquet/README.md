@@ -19,7 +19,7 @@ Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/co
 
 |Name|Type|Description|
 |-|-|-|
-|predictions|[Text]|Model predictions.|
+|predictions||Model predictions.|
 
 ## Implementation
 
@@ -47,10 +47,8 @@ xgboost_predict_on_ApacheParquet_task = xgboost_predict_on_ApacheParquet_op(
 * input_type=[ApacheParquet]
 * input_type=[String]
 * input_type=[XGBoostModel]
-* output_type=[Text]
 
 [ApacheParquet]: https://github.com/Ark-kun/pipeline_components/tree/master/types/ApacheParquet
 [String]: https://github.com/Ark-kun/pipeline_components/tree/master/types/String
-[Text]: https://github.com/Ark-kun/pipeline_components/tree/master/types/Text
 [XGBoostModel]: https://github.com/Ark-kun/pipeline_components/tree/master/types/XGBoostModel
 <!-- END_GENERATED_CONTENT -->

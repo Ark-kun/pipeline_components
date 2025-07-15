@@ -8,7 +8,7 @@ inputs:
 - {name: label_column_name, type: String, description: Optional. Name of the column
     containing the label data that is excluded during the prediction., optional: true}
 outputs:
-- {name: predictions, type: Text, description: Model predictions.}
+- {name: predictions, description: Model predictions.}
 implementation:
   container:
     image: python:3.10
