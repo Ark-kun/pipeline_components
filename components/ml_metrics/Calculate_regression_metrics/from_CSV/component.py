@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 def calculate_regression_metrics_from_csv(
     true_values_path: InputPath(),

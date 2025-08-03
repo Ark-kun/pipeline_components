@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 
 def train_linear_regression_model_using_scikit_learn_from_CSV(

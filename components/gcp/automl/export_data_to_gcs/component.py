@@ -49,7 +49,7 @@ def automl_export_data_to_gcs(
     return (gcs_output_uri_prefix, )
 
 if __name__ == '__main__':
-    from kfp.components import create_component_from_func
+    from cloud_pipelines.components import create_component_from_func
 
     automl_export_data_to_gcs_op = create_component_from_func(
         automl_export_data_to_gcs,

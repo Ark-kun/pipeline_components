@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 
 def transform_using_Pandas_DataFrame_on_JsonLines_data(

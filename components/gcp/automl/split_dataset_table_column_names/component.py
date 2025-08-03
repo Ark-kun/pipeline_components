@@ -46,7 +46,7 @@ def automl_split_dataset_table_column_names(
 
 
 if __name__ == '__main__':
-    from kfp.components import create_component_from_func
+    from cloud_pipelines.components import create_component_from_func
 
     automl_split_dataset_table_column_names_op = create_component_from_func(
         automl_split_dataset_table_column_names,

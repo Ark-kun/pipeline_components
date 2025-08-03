@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func, InputPath, OutputPath
+from cloud_pipelines.components import create_component_from_func, InputPath, OutputPath
 
 
 def upload_Scikit_learn_pickle_model_to_Google_Cloud_Vertex_AI(

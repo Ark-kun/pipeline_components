@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func
+from cloud_pipelines.components import create_component_from_func
 
 def create_study_in_gcp_ai_platform_optimizer(
     study_id: str,

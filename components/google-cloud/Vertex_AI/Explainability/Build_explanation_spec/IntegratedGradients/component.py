@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from kfp.components import create_component_from_func, InputPath, OutputPath
+from cloud_pipelines.components import create_component_from_func, InputPath, OutputPath
 
 
 # https://cloud.google.com/vertex-ai/docs/reference/rest/v1/ExplanationSpec#ExplanationParameters

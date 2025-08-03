@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 
 def train_XGBoost_model_on_CSV(

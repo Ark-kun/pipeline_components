@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from kfp import components
+from cloud_pipelines import components
 
 
 xgboost_train_regression_and_calculate_metrics_on_csv_op = components.load_component_from_url('https://raw.githubusercontent.com/Ark-kun/pipeline_components/2a75b09758df29ff983cdfbacb2f12763cc074f2/components/XGBoost/Train_regression_and_calculate_metrics/from_CSV/component.yaml')

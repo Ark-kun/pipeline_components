@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from kfp.components import create_component_from_func, InputPath, OutputPath
+from cloud_pipelines.components import create_component_from_func, InputPath, OutputPath
 
 
 def get_explanation_metadata_for_TensorflowSavedModel(

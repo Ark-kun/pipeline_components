@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func, InputPath, OutputPath
+from cloud_pipelines.components import create_component_from_func, InputPath, OutputPath
 
 def create_dataset_from_CSV_for_Google_Cloud_AutoML_Tables(
     data_path: InputPath('CSV'),

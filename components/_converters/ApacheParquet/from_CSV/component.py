@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 def convert_csv_to_apache_parquet(
     data_path: InputPath('CSV'),

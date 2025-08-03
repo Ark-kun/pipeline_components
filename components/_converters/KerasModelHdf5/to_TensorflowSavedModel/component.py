@@ -1,4 +1,4 @@
-from kfp.components import create_component_from_func, InputPath, OutputPath
+from cloud_pipelines.components import create_component_from_func, InputPath, OutputPath
 
 def keras_convert_hdf5_model_to_tf_saved_model(
     model_path: InputPath('KerasModelHdf5'),

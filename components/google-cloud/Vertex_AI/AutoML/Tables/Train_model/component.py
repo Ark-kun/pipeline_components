@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func
+from cloud_pipelines.components import create_component_from_func
 
 def train_tabular_model_using_Google_Cloud_Vertex_AI_AutoML(
     # AutoMLTabularTrainingJob.run required parameters

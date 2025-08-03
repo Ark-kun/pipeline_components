@@ -53,7 +53,7 @@ def create_dataset_for_google_cloud_automl_tables(
 
 
 if __name__ == '__main__':
-    from kfp.components import create_component_from_func
+    from cloud_pipelines.components import create_component_from_func
 
     create_dataset_for_google_cloud_automl_tables_op = create_component_from_func(
         create_dataset_for_google_cloud_automl_tables,

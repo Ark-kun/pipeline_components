@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func
+from cloud_pipelines.components import create_component_from_func
 
 def create_dataset_from_BigQuery_for_Google_Cloud_AutoML_Tables(
     data_uri: 'GoogleCloudBigQueryUri',

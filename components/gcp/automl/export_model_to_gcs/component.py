@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from kfp.components import create_component_from_func
+from cloud_pipelines.components import create_component_from_func
 
 
 def automl_export_model_to_gcs(

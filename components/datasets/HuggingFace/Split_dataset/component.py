@@ -1,4 +1,4 @@
-from kfp.components import create_component_from_func, InputPath, OutputPath
+from cloud_pipelines.components import create_component_from_func, InputPath, OutputPath
 
 
 def split_dataset_huggingface(

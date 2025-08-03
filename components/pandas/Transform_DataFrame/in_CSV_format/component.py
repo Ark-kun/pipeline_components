@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 def Pandas_Transform_DataFrame_in_CSV_format(
     table_path: InputPath('CSV'),

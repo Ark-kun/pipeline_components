@@ -1,4 +1,4 @@
-from kfp.components import create_component_from_func, OutputPath
+from cloud_pipelines.components import create_component_from_func, OutputPath
 
 
 def create_fully_connected_tensorflow_network(

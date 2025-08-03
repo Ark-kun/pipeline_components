@@ -95,7 +95,7 @@ def deploy_model_to_endpoint_for_Google_Cloud_Vertex_AI_Model(
 
 
 if __name__ == "__main__":
-    from kfp.components import create_component_from_func
+    from cloud_pipelines.components import create_component_from_func
 
     deploy_model_to_endpoint_for_Google_Cloud_Vertex_AI_Model_op = create_component_from_func(
         func=deploy_model_to_endpoint_for_Google_Cloud_Vertex_AI_Model,

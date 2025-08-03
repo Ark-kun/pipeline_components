@@ -1,4 +1,4 @@
-from kfp.components import create_component_from_func
+from cloud_pipelines.components import create_component_from_func
 
 
 def append_integer_item_to_list(

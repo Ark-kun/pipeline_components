@@ -65,7 +65,7 @@ def automl_prediction_service_batch_predict(
 
 
 if __name__ == '__main__':
-    from kfp.components import create_component_from_func
+    from cloud_pipelines.components import create_component_from_func
 
     automl_prediction_service_batch_predict_op = create_component_from_func(
         automl_prediction_service_batch_predict,

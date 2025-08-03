@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath, create_component_from_func
+from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
 def convert_apache_parquet_to_apache_arrow_feather(
     data_path: InputPath('ApacheParquet'),

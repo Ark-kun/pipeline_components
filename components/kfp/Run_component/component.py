@@ -37,7 +37,7 @@ def run_component_or_pipeline(
 
 
 if __name__ == '__main__':
-    from kfp.components import create_component_from_func
+    from cloud_pipelines.components import create_component_from_func
     run_component_or_pipeline_op = create_component_from_func(
         run_component_or_pipeline,
         base_image='python:3.9',

@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func
+from cloud_pipelines.components import create_component_from_func
 
 def suggest_parameter_sets_from_measurements_using_gcp_ai_platform_optimizer(
     parameter_specs: list,

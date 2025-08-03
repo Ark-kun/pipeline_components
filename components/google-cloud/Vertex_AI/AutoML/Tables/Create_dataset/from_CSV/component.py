@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func, InputPath
+from cloud_pipelines.components import create_component_from_func, InputPath
 
 def create_tabular_dataset_from_CSV_for_Google_Cloud_Vertex_AI(
     data_path: InputPath('CSV'),  # data_type: "CSV"

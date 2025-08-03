@@ -1,4 +1,4 @@
-from kfp.components import InputPath, OutputPath
+from cloud_pipelines.components import InputPath, OutputPath
 
 def Trainer(
     examples_path: InputPath('Examples'),

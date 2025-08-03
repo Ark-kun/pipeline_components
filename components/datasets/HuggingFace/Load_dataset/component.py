@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from kfp.components import create_component_from_func, OutputPath
+from cloud_pipelines.components import create_component_from_func, OutputPath
 
 
 def load_dataset_using_huggingface(
