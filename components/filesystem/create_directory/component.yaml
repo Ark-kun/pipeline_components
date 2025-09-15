@@ -1,0 +1,58 @@
+name: Create directory from files (5)
+metadata:
+  annotations:
+    author: Alexey Volkov <alexey.volkov@ark-kun.com>
+    canonical_location: "https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/filesystem/create_directory/component.yaml"
+inputs:
+  - { name: File 1 }
+  - { name: File 1 name, type: String, default: "1" }
+  - { name: File 2, optional: true }
+  - { name: File 2 name, type: String, default: "2" }
+  - { name: File 3, optional: true }
+  - { name: File 3 name, type: String, default: "3" }
+  - { name: File 4, optional: true }
+  - { name: File 4 name, type: String, default: "4" }
+  - { name: File 5, optional: true }
+  - { name: File 5 name, type: String, default: "5" }
+outputs:
+  - { name: Directory, type: Directory }
+implementation:
+  container:
+    image: alpine
+    command:
+      - sh
+      - -ec
+      - |
+        output_path="$1"
+        shift
+        mkdir -p "$output_path"
+        while [ "$#" -gt 0 ]; do
+          input_path="$1"
+          file_name="$2"
+          shift 2
+          cp -r "$input_path" "$output_path/$file_name"
+        done
+      - -c  # stabilize $0 vs $1
+      - { outputPath: Directory }
+      - { inputPath: File 1 }
+      - { inputValue: File 1 name }
+      - if:
+          cond: { isPresent: File 2 }
+          then:
+            - { inputPath: File 2 }
+            - { inputValue: File 2 name }
+      - if:
+          cond: { isPresent: File 3 }
+          then:
+            - { inputPath: File 3 }
+            - { inputValue: File 3 name }
+      - if:
+          cond: { isPresent: File 4 }
+          then:
+            - { inputPath: File 4 }
+            - { inputValue: File 4 name }
+      - if:
+          cond: { isPresent: File 5 }
+          then:
+            - { inputPath: File 5 }
+            - { inputValue: File 5 name }
