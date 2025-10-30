@@ -22,7 +22,7 @@ Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/co
 
 #### Container
 
-Container image: [byrnedo/alpine-curl@sha256:548379d0a4a0c08b9e55d9d87a592b7d35d9ab3037f4936f5ccd09d0b625a342](https://hub.docker.com/r/byrnedo/alpine-curl@sha256)
+Container image: [alpine/curl:8.14.1](https://hub.docker.com/r/alpine/curl/8.14.1)
 
 ## Usage
 
