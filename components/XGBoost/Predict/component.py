@@ -4,8 +4,9 @@ from cloud_pipelines.components import InputPath, OutputPath, create_component_f
 def xgboost_predict_on_CSV(
     data_path: InputPath("CSV"),
     model_path: InputPath("XGBoostModel"),
-    predictions_path: OutputPath(),
+    predictions_path: OutputPath("CSV"),
     label_column_name: str = None,
+    prediction_column_name: str = "prediction",
 ):
     """Makes predictions using a trained XGBoost model.
 
@@ -43,10 +44,12 @@ def xgboost_predict_on_CSV(
     df.info(verbose=True)
 
     if label_column_name is not None:
-        df = df.drop(columns=[label_column_name])
+        features_df = df.drop(columns=[label_column_name])
+    else:
+        features_df = df
 
     testing_data = xgboost.DMatrix(
-        data=df,
+        data=features_df,
         enable_categorical=True,
     )
 
@@ -54,8 +57,11 @@ def xgboost_predict_on_CSV(
 
     predictions = model.predict(testing_data)
 
+    # Insert predictions column first
+    df.insert(loc=0, column=prediction_column_name, value=predictions)
+
     Path(predictions_path).parent.mkdir(parents=True, exist_ok=True)
-    numpy.savetxt(predictions_path, predictions)
+    df.to_csv(predictions_path, index=False)
 
 
 if __name__ == "__main__":

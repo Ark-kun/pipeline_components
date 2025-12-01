@@ -4,8 +4,9 @@ from cloud_pipelines.components import InputPath, OutputPath, create_component_f
 def xgboost_predict_on_ApacheParquet(
     data_path: InputPath("ApacheParquet"),
     model_path: InputPath("XGBoostModel"),
-    predictions_path: OutputPath(),
+    predictions_path: OutputPath("ApacheParquet"),
     label_column_name: str = None,
+    prediction_column_name: str = "prediction",
 ):
     """Makes predictions using a trained XGBoost model.
 
@@ -41,11 +42,13 @@ def xgboost_predict_on_ApacheParquet(
     print("Final evaluation data information:")
     df.info(verbose=True)
 
-    if label_column_name:
-        df = df.drop(columns=[label_column_name])
+    if label_column_name is not None:
+        features_df = df.drop(columns=[label_column_name])
+    else:
+        features_df = df
 
     evaluation_data = xgboost.DMatrix(
-        data=df,
+        data=features_df,
         enable_categorical=True,
     )
 
@@ -54,8 +57,11 @@ def xgboost_predict_on_ApacheParquet(
 
     predictions = model.predict(evaluation_data)
 
+    # Insert predictions column first
+    df.insert(loc=0, column=prediction_column_name, value=predictions)
+
     Path(predictions_path).parent.mkdir(parents=True, exist_ok=True)
-    numpy.savetxt(predictions_path, predictions)
+    df.to_parquet(path=predictions_path, index=False)
 
 
 if __name__ == "__main__":

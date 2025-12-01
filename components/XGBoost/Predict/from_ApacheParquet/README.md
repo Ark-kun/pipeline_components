@@ -14,12 +14,13 @@ Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/co
 |**data** **\***|[ApacheParquet]||Feature data in Apache Parquet format.|
 |**model** **\***|[XGBoostModel]||Trained model in binary XGBoost format.|
 |label_column_name|[String]||Optional. Name of the column containing the label data that is excluded during the prediction.|
+|prediction_column_name|[String]|prediction||
 
 ## Outputs
 
 |Name|Type|Description|
 |-|-|-|
-|predictions||Model predictions.|
+|predictions|[ApacheParquet]|Model predictions.|
 
 ## Implementation
 
@@ -37,6 +38,7 @@ xgboost_predict_on_ApacheParquet_task = xgboost_predict_on_ApacheParquet_op(
     model=...,
     # Optional:
     # label_column_name=...,
+    # prediction_column_name="prediction",
 )
 ```
 
@@ -47,6 +49,7 @@ xgboost_predict_on_ApacheParquet_task = xgboost_predict_on_ApacheParquet_op(
 * input_type=[ApacheParquet]
 * input_type=[String]
 * input_type=[XGBoostModel]
+* output_type=[ApacheParquet]
 
 [ApacheParquet]: https://github.com/Ark-kun/pipeline_components/tree/master/types/ApacheParquet
 [String]: https://github.com/Ark-kun/pipeline_components/tree/master/types/String
