@@ -1,0 +1,158 @@
+name: Calculate regression metrics from CSV
+description: Calculates regression metrics.
+metadata:
+  annotations: {author: Alexey Volkov <alexey.volkov@ark-kun.com>, canonical_location: 'https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml',
+    python_dependencies_time: '2025-11-30'}
+inputs:
+- {name: predictions, type: CSV}
+- {name: label_column_name, type: String, default: label, optional: true}
+- {name: prediction_column_name, type: String, default: prediction, optional: true}
+outputs:
+- {name: number_of_items, type: Integer}
+- {name: max_absolute_error, type: Float}
+- {name: mean_absolute_error, type: Float}
+- {name: mean_squared_error, type: Float}
+- {name: root_mean_squared_error, type: Float}
+- {name: metrics, type: JsonObject}
+implementation:
+  container:
+    image: python:3.12
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'pandas==2.3.3' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet
+      --no-warn-script-location 'pandas==2.3.3' --user) && "$0" "$@"
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - |
+      def calculate_regression_metrics_from_CSV(
+          predictions_path,
+          label_column_name = "label",
+          prediction_column_name = "prediction",
+      ):
+          """Calculates regression metrics.
+
+          Annotations:
+              author: Alexey Volkov <alexey.volkov@ark-kun.com>
+          """
+          import math
+          import numpy
+
+          import pandas
+
+          df = pandas.read_csv(predictions_path)
+
+          true_values = df[label_column_name]
+          predicted_values = df[prediction_column_name]
+
+          if predicted_values.shape != true_values.shape:
+              raise ValueError(
+                  "Input shapes are different: {} != {}".format(
+                      predicted_values.shape, true_values.shape
+                  )
+              )
+
+          number_of_items = true_values.size
+          errors = true_values - predicted_values
+          abs_errors = numpy.abs(errors)
+          squared_errors = errors**2
+          max_absolute_error = numpy.max(abs_errors).item()
+          mean_absolute_error = numpy.average(abs_errors).item()
+          mean_squared_error = numpy.average(squared_errors).item()
+          root_mean_squared_error = math.sqrt(mean_squared_error)
+          metrics = dict(
+              number_of_items=number_of_items,
+              max_absolute_error=max_absolute_error,
+              mean_absolute_error=mean_absolute_error,
+              mean_squared_error=mean_squared_error,
+              root_mean_squared_error=root_mean_squared_error,
+          )
+
+          return (
+              number_of_items,
+              max_absolute_error,
+              mean_absolute_error,
+              mean_squared_error,
+              root_mean_squared_error,
+              metrics,
+          )
+
+      def _serialize_float(float_value: float) -> str:
+          if isinstance(float_value, str):
+              return float_value
+          if not isinstance(float_value, (float, int)):
+              raise TypeError('Value "{}" has type "{}" instead of float.'.format(str(float_value), str(type(float_value))))
+          return str(float_value)
+
+      def _serialize_int(int_value: int) -> str:
+          if isinstance(int_value, str):
+              return int_value
+          if not isinstance(int_value, int):
+              raise TypeError('Value "{}" has type "{}" instead of int.'.format(str(int_value), str(type(int_value))))
+          return str(int_value)
+
+      def _serialize_json(obj) -> str:
+          if isinstance(obj, str):
+              return obj
+          import json
+          def default_serializer(obj):
+              if hasattr(obj, 'to_struct'):
+                  return obj.to_struct()
+              else:
+                  raise TypeError("Object of type '%s' is not JSON serializable and does not have .to_struct() method." % obj.__class__.__name__)
+          return json.dumps(obj, default=default_serializer, sort_keys=True)
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Calculate regression metrics from CSV', description='Calculates regression metrics.')
+      _parser.add_argument("--predictions", dest="predictions_path", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("--label-column-name", dest="label_column_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("--prediction-column-name", dest="prediction_column_name", type=str, required=False, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=6)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = calculate_regression_metrics_from_CSV(**_parsed_args)
+
+      _output_serializers = [
+          _serialize_int,
+          _serialize_float,
+          _serialize_float,
+          _serialize_float,
+          _serialize_float,
+          _serialize_json,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, "w") as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --predictions
+    - {inputPath: predictions}
+    - if:
+        cond: {isPresent: label_column_name}
+        then:
+        - --label-column-name
+        - {inputValue: label_column_name}
+    - if:
+        cond: {isPresent: prediction_column_name}
+        then:
+        - --prediction-column-name
+        - {inputValue: prediction_column_name}
+    - '----output-paths'
+    - {outputPath: number_of_items}
+    - {outputPath: max_absolute_error}
+    - {outputPath: mean_absolute_error}
+    - {outputPath: mean_squared_error}
+    - {outputPath: root_mean_squared_error}
+    - {outputPath: metrics}
