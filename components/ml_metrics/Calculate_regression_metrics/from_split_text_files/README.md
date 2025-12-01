@@ -1,14 +1,11 @@
 <!-- BEGIN_GENERATED_CONTENT -->
-# Calculate regression metrics from csv
+# Calculate regression metrics from split text files
 
 Description: Calculates regression metrics.
 
-    Annotations:
-        author: Alexey Volkov <alexey.volkov@ark-kun.com>
-
 Author: Alexey Volkov <alexey.volkov@ark-kun.com>
 
-Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml), [Raw](https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml)
+Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/components/ml_metrics/Calculate_regression_metrics/from_split_text_files/component.yaml), [Raw](https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ml_metrics/Calculate_regression_metrics/from_split_text_files/component.yaml)
 
 ## Inputs
 
@@ -37,9 +34,9 @@ Container image: [python:3.7](https://hub.docker.com/r/_/python)
 ## Usage
 
 ```python
-calculate_regression_metrics_from_csv_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ml_metrics/Calculate_regression_metrics/from_CSV/component.yaml")
+calculate_regression_metrics_from_split_text_files_op = components.load_component_from_url("https://raw.githubusercontent.com/Ark-kun/pipeline_components/master/components/ml_metrics/Calculate_regression_metrics/from_split_text_files/component.yaml")
 ...
-calculate_regression_metrics_from_csv_task = calculate_regression_metrics_from_csv_op(
+calculate_regression_metrics_from_split_text_files_task = calculate_regression_metrics_from_split_text_files_op(
     true_values=...,
     predicted_values=...,
 )

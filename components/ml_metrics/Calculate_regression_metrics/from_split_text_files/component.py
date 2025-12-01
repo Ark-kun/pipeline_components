@@ -1,7 +1,7 @@
 from typing import NamedTuple
 from cloud_pipelines.components import InputPath, OutputPath, create_component_from_func
 
-def calculate_regression_metrics_from_csv(
+def calculate_regression_metrics_from_split_text_files(
     true_values_path: InputPath(),
     predicted_values_path: InputPath(),
 ) -> NamedTuple('Outputs', [
@@ -58,8 +58,8 @@ def calculate_regression_metrics_from_csv(
 
 
 if __name__ == '__main__':
-    calculate_regression_metrics_from_csv_op = create_component_from_func(
-        calculate_regression_metrics_from_csv,
+    calculate_regression_metrics_from_split_text_files_op = create_component_from_func(
+        calculate_regression_metrics_from_split_text_files,
         output_component_file='component.yaml',
         base_image='python:3.7',
         packages_to_install=['numpy==1.19.0'],
