@@ -22,7 +22,7 @@ Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/co
 
 #### Container
 
-Container image: [alpine/curl:8.14.1](https://hub.docker.com/r/alpine/curl/8.14.1)
+Container image: [alpine/curl:8.14.1](https://hub.docker.com/r/alpine/curl)
 
 ## Usage
 
