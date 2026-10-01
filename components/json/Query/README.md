@@ -23,7 +23,7 @@ Location: [GitHub](https://github.com/Ark-kun/pipeline_components/blob/master/co
 
 #### Container
 
-Container image: [stedolan/jq:latest](https://hub.docker.com/r/stedolan/jq)
+Container image: [ghcr.io/jqlang/jq:1.8.2](https://ghcr.io/jqlang/jq)
 
 ## Usage
 
